@@ -1,4 +1,4 @@
-Splice-Admin
+Splice Admin
 ============
 
 Splice Admin is a remote Windows administration tool.  It allows you to retrieve information and interact with remote machines on your network.
