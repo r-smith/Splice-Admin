@@ -9,6 +9,8 @@ Splice Admin is a remote Windows administration tool.  It allows you to retrieve
 ##### Notes
 * There is no installer.  Just run the .exe.
 * .NET 4.0 or greater is required on the machine running Splice Admin.
+* Most features require WMI to be running on the target computer.
+* You most likely need administrative rights on the target computer.
 
 
 Features
