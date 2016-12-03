@@ -1,10 +1,13 @@
-﻿using Splice_Admin.Classes;
+﻿using CSUACSelfElevation;
+using Splice_Admin.Classes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.DirectoryServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -44,7 +47,26 @@ namespace Splice_Admin.Views.Desktop
             bgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgThread_GetDomainComputersCompleted);
             bgWorker.RunWorkerAsync();
 
-            contentControl.Content = new HomeView();
+            if (commandLineArgs.Length == 3 && commandLineArgs[1] == "Elevate")
+            {
+                txtTargetComputer.Text = Environment.MachineName;
+                GlobalVar.TargetComputerName = txtTargetComputer.Text;
+
+                switch (commandLineArgs[2])
+                {
+                    case "LogonHistory":
+                        btnUsers.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                        break;
+                    case "Processes":
+                        btnProcesses.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                        break;
+                    default:
+                        contentControl.Content = new HomeView();
+                        break;
+                }
+            }
+            else
+                contentControl.Content = new HomeView();
         }
 
 
@@ -158,7 +180,33 @@ namespace Splice_Admin.Views.Desktop
                     contentControl.Content = new SystemInfoView(txtTargetComputer.Text.Trim());
                     break;
                 case "Processes":
-                    contentControl.Content = new ProcessesView(txtTargetComputer.Text.Trim());
+                    // Elevate the process if targeting local computer and is not run as administrator.
+                    if (txtTargetComputer.Text == Environment.MachineName && !ElevationHelper.IsRunAsAdmin())
+                    {
+                        // Launch itself as administrator
+                        ProcessStartInfo proc = new ProcessStartInfo();
+                        proc.UseShellExecute = true;
+                        proc.WorkingDirectory = Environment.CurrentDirectory;
+                        proc.FileName = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                        proc.Verb = "runas";
+                        proc.Arguments = "Elevate Processes";
+
+                        try
+                        {
+                            Process.Start(proc);
+                        }
+                        catch
+                        {
+                            // The user refused the elevation.
+                            // Do nothing and return directly ...
+                            contentControl.Content = new ProcessesView(txtTargetComputer.Text.Trim());
+                            break;
+                        }
+
+                        Application.Current.Shutdown();
+                    }
+                    else
+                        contentControl.Content = new ProcessesView(txtTargetComputer.Text.Trim());
                     break;
                 case "Services":
                     contentControl.Content = new ServicesView(txtTargetComputer.Text.Trim());

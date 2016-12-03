@@ -1,7 +1,10 @@
-﻿using Splice_Admin.Classes;
+﻿using CSUACSelfElevation;
+using Splice_Admin.Classes;
 using Splice_Admin.Views.Desktop.Dialog;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -15,9 +18,13 @@ namespace Splice_Admin.Views.Desktop
         public LogonSessionsView(string targetComputer)
         {
             InitializeComponent();
-
+            
             RemoteLogonSession.ComputerName = targetComputer;
             RefreshDataset();
+
+            string[] commandLineArgs = Environment.GetCommandLineArgs();
+            if (commandLineArgs.Length == 3 && commandLineArgs[1] == "Elevate" && commandLineArgs[2] == "LogonHistory")
+                tabLogonHistory.IsSelected = true;
         }
 
 
@@ -228,18 +235,49 @@ namespace Splice_Admin.Views.Desktop
 
         private void tabLogonHistory_Selected(object sender, RoutedEventArgs e)
         {
-            // Setup a background thread.
-            var bgWorker = new BackgroundWorker();
-            bgWorker.DoWork += new DoWorkEventHandler(bgThread_GetLogonHistory);
-            bgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgThread_GetLogonHistoryCompleted);
+            // Elevate the process if targeting local computer and is not run as administrator.
+            if (RemoteLogonSession.ComputerName == Environment.MachineName && !ElevationHelper.IsRunAsAdmin())
+            {
+                // Launch itself as administrator
+                ProcessStartInfo proc = new ProcessStartInfo();
+                proc.UseShellExecute = true;
+                proc.WorkingDirectory = Environment.CurrentDirectory;
+                proc.FileName = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                proc.Verb = "runas";
+                proc.Arguments = "Elevate LogonHistory";
 
-            // Display overlay window indicating work is being performed.
-            gridNoHistory.Visibility = Visibility.Collapsed;
-            gridError.Visibility = Visibility.Collapsed;
-            gridHistoryLoading.Visibility = Visibility.Visible;
+                try
+                {
+                    Process.Start(proc);
+                }
+                catch
+                {
+                    // The user refused the elevation.
+                    // Do nothing and return directly ...
+                    gridHistoryLoading.Visibility = Visibility.Collapsed;
+                    gridNoHistory.Visibility = Visibility.Collapsed;
+                    tbHistoryError.Text = "Access denied.";
+                    gridHistoryError.Visibility = Visibility.Visible;
+                    return;
+                }
 
-            // Retrieve event log in a new background thread.
-            bgWorker.RunWorkerAsync();
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                // Setup a background thread.
+                var bgWorker = new BackgroundWorker();
+                bgWorker.DoWork += new DoWorkEventHandler(bgThread_GetLogonHistory);
+                bgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgThread_GetLogonHistoryCompleted);
+
+                // Display overlay window indicating work is being performed.
+                gridNoHistory.Visibility = Visibility.Collapsed;
+                gridError.Visibility = Visibility.Collapsed;
+                gridHistoryLoading.Visibility = Visibility.Visible;
+
+                // Retrieve event log in a new background thread.
+                bgWorker.RunWorkerAsync();
+            }
         }
 
 

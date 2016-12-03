@@ -80,6 +80,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Classes\SelfElevation\ElevationHelper.cs" />
+    <Compile Include="Classes\SelfElevation\NativeMethods.cs" />
     <Compile Include="Classes\ValueConverters.cs" />
     <Compile Include="Controls\CircularProgressBar.xaml.cs">
       <DependentUpon>CircularProgressBar.xaml</DependentUpon>

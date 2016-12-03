@@ -35,16 +35,16 @@ namespace Splice_Admin.Classes
             var taskResult = new TaskResult();
             systemInfo.Result = taskResult;
 
-            ConnectionOptions op = new ConnectionOptions();
+            var op = new ConnectionOptions();
             if (GlobalVar.UseAlternateCredentials)
             {
                 op.Username = GlobalVar.AlternateUsername;
                 op.Password = GlobalVar.AlternatePassword;
                 op.Authority = $"NTLMDOMAIN:{GlobalVar.AlternateDomain}";
             }
-            ManagementScope sc = new ManagementScope($@"\\{TargetComputer}\root\CIMV2", op);
-            ObjectQuery query = new ObjectQuery("SELECT Caption,Description,LastBootUpTime,Version,ProductType FROM Win32_OperatingSystem");
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(sc, query);
+            var sc = new ManagementScope($@"\\{TargetComputer}\root\CIMV2", op);
+            var query = new ObjectQuery("SELECT Caption,Description,LastBootUpTime,Version,ProductType FROM Win32_OperatingSystem");
+            var searcher = new ManagementObjectSearcher(sc, query);
 
             try
             {
@@ -127,7 +127,7 @@ namespace Splice_Admin.Classes
                 searcher = new ManagementObjectSearcher(sc, query);
                 UInt32 clockSpeed = 0;
                 UInt32 numberOfProcessors = 1;
-                bool isLogicalCpuSupported = false;
+                var isLogicalCpuSupported = false;
                 foreach (ManagementObject obj in searcher.Get())
                 {
                     if (obj["CurrentClockSpeed"] != null) clockSpeed = (UInt32)obj["CurrentClockSpeed"];
@@ -238,7 +238,7 @@ namespace Splice_Admin.Classes
 
         private static bool GetSysRebootState()
         {
-            bool isRebootPending = false;
+            var isRebootPending = false;
             
             const string wuRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired";
             const string cbsRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending";

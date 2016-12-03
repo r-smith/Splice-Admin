@@ -41,6 +41,12 @@
     <Grid>
         <ScrollViewer Padding="10">
             <StackPanel>
+                <TextBlock Style="{StaticResource HeaderText}" Text="2016.1203" />
+                <ContentControl Template="{StaticResource BulletTemplate}">
+                    <TextBlock Style="{StaticResource MainText}"
+                               Text="The application no longer requires elevated permissions to run.  There are currently two instances where it will request elevation: 1) Selecting the 'Processes' tab when your local computer is the target.  2) Selecting the 'Logon History' tab when your local computer is the target." />
+                </ContentControl>
+                
                 <TextBlock Style="{StaticResource HeaderText}" Text="2016.1201" />
                 <ContentControl Template="{StaticResource BulletTemplate}">
                     <TextBlock Style="{StaticResource MainText}"
