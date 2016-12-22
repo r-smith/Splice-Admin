@@ -80,6 +80,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Classes\RemoteBulkQuery.cs" />
     <Compile Include="Classes\SelfElevation\ElevationHelper.cs" />
     <Compile Include="Classes\SelfElevation\NativeMethods.cs" />
     <Compile Include="Classes\ValueConverters.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="Classes\GlobalVar.cs" />
     <Compile Include="Classes\RemoteTask.cs" />
     <Compile Include="Classes\UserImpersonation.cs" />
+    <Compile Include="Controls\ListBoxBehavior.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -96,6 +98,12 @@
     </Compile>
     <Compile Include="Views\Desktop\AlternateCredentialsView.xaml.cs">
       <DependentUpon>AlternateCredentialsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Desktop\BulkQueryView.xaml.cs">
+      <DependentUpon>BulkQueryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Desktop\BulkQueryWindow.xaml.cs">
+      <DependentUpon>BulkQueryWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Desktop\ChangeLogWindow.xaml.cs">
       <DependentUpon>ChangeLogWindow.xaml</DependentUpon>
@@ -173,6 +181,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Desktop\AlternateCredentialsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Desktop\BulkQueryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Desktop\BulkQueryWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

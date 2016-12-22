@@ -186,6 +186,58 @@ namespace RemoteDesktopServicesAPI
         }
 
 
+        public static bool IsUserLoggedOn(IntPtr server, string queryUserName)
+        {
+            IntPtr buffer = IntPtr.Zero;
+            int count = 0;
+            bool isUserLoggedOn = false;
+
+            try
+            {
+                int retval = WTSEnumerateSessions(server, 0, 1, ref buffer, ref count);
+                int dataSize = Marshal.SizeOf(typeof(WTS_SESSION_INFO));
+                Int64 current = (int)buffer;
+
+                if (retval != 0)
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        var bufferTwo = IntPtr.Zero;
+                        uint bytesReturned = 0;
+
+                        WTS_SESSION_INFO si = (WTS_SESSION_INFO)Marshal.PtrToStructure((IntPtr)current, typeof(WTS_SESSION_INFO));
+                        current += dataSize;
+                        //windowsUser.SessionId = Convert.ToUInt32(si.SessionID);
+
+                        try
+                        {
+                            string loggedOnUser = string.Empty;
+
+                            // Get the username of the Terminal Services user.
+                            if (WTSQuerySessionInformation(server, si.SessionID, WTS_INFO_CLASS.WTSUserName, out buffer, out bytesReturned) == true)
+                                loggedOnUser = Marshal.PtrToStringAnsi(buffer).Trim();
+                            if (loggedOnUser.Equals(queryUserName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                isUserLoggedOn = true;
+                                break;
+                            }
+                        }
+                        finally
+                        {
+                            WTSFreeMemory(bufferTwo);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                WTSFreeMemory(buffer);
+            }
+
+
+            return isUserLoggedOn;
+        }
+
         public static bool LogOffUser(IntPtr Server, int SessionId, string Username)
         {
             bool returnValue = false;

@@ -174,6 +174,7 @@ namespace Splice_Admin.Views.Desktop
             SelectedItem.Text = selectedButton.Content.ToString();
             SelectedTarget.Text = txtTargetComputer.Text;
             SelectedTarget.Visibility = Visibility.Visible;
+            txtTargetComputer.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#000000"));
             switch (SelectedItem.Text)
             {
                 case "System Info":
@@ -227,6 +228,11 @@ namespace Splice_Admin.Views.Desktop
                     SelectedTarget.Visibility = Visibility.Collapsed;
                     contentControl.Content = new TasksView();
                     break;
+                case "Bulk Query":
+                    SelectedTarget.Visibility = Visibility.Collapsed;
+                    txtTargetComputer.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#999"));
+                    contentControl.Content = new BulkQueryView();
+                    break;
                 default:
                     MessageBox.Show("Button not defined.");
                     break;
@@ -243,6 +249,7 @@ namespace Splice_Admin.Views.Desktop
             btnUpdates.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
             btnUsers.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
             btnTasks.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
+            btnBulkQuery.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
             selectedButton.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#eee"));
         }
         
