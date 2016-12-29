@@ -2,6 +2,7 @@
 using RemoteDesktopServicesAPI;
 using Splice_Admin.Classes;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Management;
@@ -163,36 +164,13 @@ namespace Splice_Admin.Views.Desktop
             catch (Exception ex)
             {
                 string errorMessage = ex.Message;
-                if (ex.Message.Contains("(")) ;
-                errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+                if (ex.Message.Contains("("))
+                    errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
 
                 bw.ReportProgress(
                     (int)QueryResult.Type.NoMatch,
-                    new QueryResult { ComputerName = targetComputer, ResultText = errorMessage});
+                    new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
             }
-
-
-            //try
-            //{
-            //    var pathRoot = Path.GetPathRoot(searchPhrase);
-            //    var pathFolder = searchPhrase.Substring(pathRoot.Length);
-            //    var uncPath = $@"\\{targetComputer}\{pathRoot.Substring(0, 1)}$\{pathFolder}";
-
-            //    if (File.Exists(uncPath) || Directory.Exists(uncPath))
-            //        bw.ReportProgress(
-            //            (int)QueryResult.Type.HasMatch,
-            //            new QueryResult { ComputerName = targetComputer });
-            //    else
-            //        bw.ReportProgress(
-            //            (int)QueryResult.Type.NoMatch,
-            //            new QueryResult { ComputerName = targetComputer });
-            //}
-            //catch (Exception ex)
-            //{
-            //    bw.ReportProgress(
-            //        (int)QueryResult.Type.Error,
-            //        new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
-            //}
         }
 
         private void SearchForWindowsService(string targetComputer, string searchPhrase)
@@ -207,10 +185,16 @@ namespace Splice_Admin.Views.Desktop
             {
                 if (searcher.Get().Count > 0)
                 {
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        var displayName = (obj["DisplayName"] != null) ? obj["DisplayName"].ToString() : string.Empty;
+                        var startMode = (obj["StartMode"] != null) ? obj["StartMode"].ToString() : string.Empty;
+                        var state = (obj["State"] != null) ? obj["State"].ToString() : string.Empty;
 
-                    bw.ReportProgress(
-                        (int)QueryResult.Type.Match,
-                        new QueryResult { ComputerName = targetComputer, ResultText = "Service found." });
+                        bw.ReportProgress(
+                            (int)QueryResult.Type.Match,
+                            new QueryResult { ComputerName = targetComputer, ResultText = $"{displayName} ({startMode}) - {state}" });
+                    }
                 }
                 else
                     bw.ReportProgress(
@@ -219,9 +203,13 @@ namespace Splice_Admin.Views.Desktop
             }
             catch (Exception ex)
             {
+                string errorMessage = ex.Message;
+                if (ex.Message.Contains("("))
+                    errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
                 bw.ReportProgress(
                     (int)QueryResult.Type.NoMatch,
-                    new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
+                    new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
             }
         }
 
@@ -251,32 +239,30 @@ namespace Splice_Admin.Views.Desktop
 
                 try
                 {
-                    bool hasMatch = false;
+                    int numberOfMatchingApplications = 0;
+
                     using (RegistryKey key = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, targetComputer, RegistryView.Registry64))
                     using (RegistryKey mainKey64 = key.OpenSubKey(uninstallKey64))
-                        hasMatch = EnumerateUninstallKeys(mainKey64, searchPhrase);
+                        numberOfMatchingApplications += EnumerateUninstallKeys(mainKey64, searchPhrase, targetComputer);
 
-                    if (hasMatch == false)
-                    {
-                        using (RegistryKey key = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, targetComputer, RegistryView.Registry32))
-                        using (RegistryKey mainKey32 = key.OpenSubKey(uninstallKey64))
-                            hasMatch = EnumerateUninstallKeys(mainKey32, searchPhrase);
-                    }
+                    using (RegistryKey key = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, targetComputer, RegistryView.Registry32))
+                    using (RegistryKey mainKey32 = key.OpenSubKey(uninstallKey64))
+                        numberOfMatchingApplications += EnumerateUninstallKeys(mainKey32, searchPhrase, targetComputer);
 
-                    if (hasMatch)
-                        bw.ReportProgress(
-                            (int)QueryResult.Type.Match,
-                            new QueryResult { ComputerName = targetComputer, ResultText = "Application found." });
-                    else
+                    if (numberOfMatchingApplications == 0)
                         bw.ReportProgress(
                             (int)QueryResult.Type.NoMatch,
                             new QueryResult { ComputerName = targetComputer, ResultText = "Application not found." });
                 }
                 catch (Exception ex)
                 {
+                    string errorMessage = ex.Message;
+                    if (ex.Message.Contains("("))
+                        errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
                     bw.ReportProgress(
                         (int)QueryResult.Type.NoMatch,
-                        new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
+                        new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
                 }
 
 
@@ -335,9 +321,13 @@ namespace Splice_Admin.Views.Desktop
                 }
                 catch (Exception ex)
                 {
+                    string errorMessage = ex.Message;
+                    if (ex.Message.Contains("("))
+                        errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
                     bw.ReportProgress(
                         (int)QueryResult.Type.NoMatch,
-                        new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
+                        new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
                 }
             }
             // If operating system is desktop edition, query Win32_Process for explorer.exe to determine logged on users.
@@ -378,20 +368,24 @@ namespace Splice_Admin.Views.Desktop
                 }
                 catch (Exception ex)
                 {
+                    string errorMessage = ex.Message;
+                    if (ex.Message.Contains("("))
+                        errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
                     bw.ReportProgress(
                         (int)QueryResult.Type.NoMatch,
-                        new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
+                        new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
                 }
             }
         }
 
 
-        private bool EnumerateUninstallKeys(RegistryKey key, string searchPhrase)
+        private int EnumerateUninstallKeys(RegistryKey key, string searchPhrase, string targetComputer)
         {
-            bool matchFound = false;
+            int numberOfMatchingApplications = 0;
 
             if (key == null)
-                return false;
+                return numberOfMatchingApplications;
 
             foreach (string subKeyName in key.GetSubKeyNames())
             {
@@ -412,15 +406,24 @@ namespace Splice_Admin.Views.Desktop
                     {
                         if (subKey.GetValue("DisplayName").ToString().ToUpper().Contains(searchPhrase.ToUpper()))
                         {
-                            matchFound = true;
-                            break;
+                            ++numberOfMatchingApplications;
+
+                            string resultText;
+                            if (subKey.GetValue("DisplayVersion") != null)
+                                resultText = $"{subKey.GetValue("DisplayName")} [{subKey.GetValue("DisplayVersion")}]";
+                            else
+                                resultText = subKey.GetValue("DisplayName").ToString();
+
+                            bw.ReportProgress(
+                                (int)QueryResult.Type.Match,
+                                new QueryResult { ComputerName = targetComputer, ResultText = resultText });
                         }
                     }
                     else
                         continue;
                 }
             }
-            return matchFound;
+            return numberOfMatchingApplications;
         }
 
     }

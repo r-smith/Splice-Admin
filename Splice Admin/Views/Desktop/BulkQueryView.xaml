@@ -48,10 +48,10 @@
                                     <TextBlock Text="Installed Application"
                                                Margin="0,20,0,0"
                                                TextDecorations="Underline" />
-                                    <TextBlock Text="Check if an application is installed."
+                                    <TextBlock Text="Check if an application is installed and get the product version.  Note: Some applications include their version number as part of their display name, so you might see a version number listed twice."
                                                FontSize="12"
                                                TextWrapping="Wrap"/>
-                                    <TextBlock Text="Search will match on partial strings.  Search will skip to the next target after the first match is found.  Example:  'flash' would match on 'Adobe Flash Player'"
+                                    <TextBlock Text="This is a wildcard search that matches partial strings.  Example:  'flash' would match on 'Adobe Flash Player' and 'Flasher Masher Deluxe'"
                                                Margin="15,5,0,0"
                                                TextWrapping="Wrap"/>
                                     <TextBlock Text="Logged On User"
@@ -66,10 +66,10 @@
                                     <TextBlock Text="Windows Service"
                                                Margin="0,20,0,0"
                                                TextDecorations="Underline" />
-                                    <TextBlock Text="Check if a Windows service is installed."
+                                    <TextBlock Text="Check if a Windows service is installed and get the startup type and current status (running, stopped, etc)."
                                                FontSize="12"
                                                TextWrapping="Wrap"/>
-                                    <TextBlock Text="Search will match on partial strings.  Search will skip to the next target after the first match is found.  Example:  'endpoint' would match on 'Symantec Enpoint Protection'"
+                                    <TextBlock Text="This is a wildcard search that matches partial strings.  Example:  'endpoi' would match on 'Symantec Endpoint Protection'"
                                                Margin="15,5,0,0"
                                                TextWrapping="Wrap"/>
                                 </StackPanel>

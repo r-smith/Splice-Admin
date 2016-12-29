@@ -9,8 +9,8 @@
         mc:Ignorable="d"
         Background="#fafafa"
         Title="Splice Admin - Bulk Query"
-        Height="475" Width="600"
-        MinHeight="250" MinWidth="300">
+        Height="475" Width="750"
+        MinHeight="300" MinWidth="400">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -74,7 +74,8 @@
                        Padding="10,4,0,4"
                        FontSize="13"
                        Foreground="#FF6B4BD6" />
-
+            
+            <!-- Match DataGrid -->
             <DataGrid Grid.Row="1"
                       Grid.Column="0"
                       Name="dgHasMatch"
@@ -194,18 +195,21 @@
                                 </Style.Triggers>
                                 <Setter Property="Padding" Value="7,2,10,2" />
                                 <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-                                <Setter Property="Foreground" Value="#FF138B00" />
+                                <Setter Property="Foreground" Value="Black" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
             
+            <!-- Grid splitter -->
             <GridSplitter Grid.Row="1"
                           Grid.Column="1"
                           Width="2"
                           Background="#777"
                           HorizontalAlignment="Center"/>
+            
+            <!-- No Match DataGrid -->
             <DataGrid Grid.Row="1"
                       Grid.Column="2"
                       Name="dgNoMatch"
@@ -325,7 +329,7 @@
                                 </Style.Triggers>
                                 <Setter Property="Padding" Value="7,2,10,2" />
                                 <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-                                <Setter Property="Foreground" Value="#FF6B4BD6" />
+                                <Setter Property="Foreground" Value="Black" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
