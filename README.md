@@ -3,14 +3,17 @@ Splice Admin
 
 Splice Admin is a remote Windows administration tool.  It allows you to retrieve information and interact with remote machines on your network.
 
-### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/download/v2016.1203/SpliceAdm.exe)
+### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/download/v2016.1229/SpliceAdm.exe)
 ### [Click here to download the source](https://github.com/R-Smith/Splice-Admin/archive/master.zip)
 
 ##### Notes
 * There is no installer.  Just run the .exe.
 * .NET 4.0 or greater is required on the machine running Splice Admin.
 * Most features require WMI to be running on the target computer.
-* You most likely need administrative rights on the target computer.
+* Local administrative rights are required on the target computer.
+
+### Changes for v2016.1229
+* New bulk query feature.  Perform various types of searches across multiple computers in your environment.  You can currently search for files, installed applications, logged on users, and installed services.  The target computers can be entered in a comma-separated list, or choose one of the pre-set options (all domain computers, all workstations, or all servers).
 
 
 Features
