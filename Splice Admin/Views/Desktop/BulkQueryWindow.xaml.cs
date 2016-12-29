@@ -15,9 +15,8 @@ namespace Splice_Admin.Views.Desktop
     /// </summary>
     public partial class BulkQueryWindow : Window
     {
-        private ObservableCollection<string> HasMatchCollection = new ObservableCollection<string>();
-        private ObservableCollection<string> NoMatchCollection = new ObservableCollection<string>();
-        private ObservableCollection<string> ErrorCollection = new ObservableCollection<string>();
+        private ObservableCollection<QueryResult> HasMatchCollection = new ObservableCollection<QueryResult>();
+        private ObservableCollection<QueryResult> NoMatchCollection = new ObservableCollection<QueryResult>();
         private BackgroundWorker bw;
         private int SearchItemsRemaining;
 
@@ -25,9 +24,8 @@ namespace Splice_Admin.Views.Desktop
         {
             InitializeComponent();
 
-            lbHasMatch.ItemsSource = HasMatchCollection;
-            lbNoMatch.ItemsSource = NoMatchCollection;
-            lbError.ItemsSource = ErrorCollection;
+            dgHasMatch.ItemsSource = HasMatchCollection;
+            dgNoMatch.ItemsSource = NoMatchCollection;
 
             switch (bulkQuery.SearchType)
             {
@@ -118,17 +116,14 @@ namespace Splice_Admin.Views.Desktop
             var queryResult = e.UserState as QueryResult;
             switch (e.ProgressPercentage)
             {
-                case ((int)QueryResult.Type.HasMatch):
-                    HasMatchCollection.Add(queryResult.ComputerName);
+                case ((int)QueryResult.Type.Match):
+                    HasMatchCollection.Add(queryResult);
                     break;
                 case ((int)QueryResult.Type.NoMatch):
-                    NoMatchCollection.Add(queryResult.ComputerName);
-                    break;
-                case ((int)QueryResult.Type.Error):
-                    ErrorCollection.Add(queryResult.ComputerName);
+                    NoMatchCollection.Add(queryResult);
                     break;
                 case ((int)QueryResult.Type.ProgressReport):
-                    txtStatus.Text = "Querying: " + queryResult.ComputerName;
+                    txtStatus.Text = $"Querying: {queryResult.ComputerName}";
                     txtRemainingCount.Text = $"Remaining: {--SearchItemsRemaining}";
                     break;
             }
@@ -148,8 +143,8 @@ namespace Splice_Admin.Views.Desktop
             {
                 if (searcher.Get().Count > 0)
                     bw.ReportProgress(
-                        (int)QueryResult.Type.HasMatch,
-                        new QueryResult { ComputerName = targetComputer });
+                        (int)QueryResult.Type.Match,
+                        new QueryResult { ComputerName = targetComputer, ResultText = "File found." });
                 else
                 {
                     query = new ObjectQuery($@"SELECT * FROM Win32_Directory WHERE Name = '{searchPhrase.Replace(@"\", @"\\")}'");
@@ -157,19 +152,23 @@ namespace Splice_Admin.Views.Desktop
 
                     if (searcher.Get().Count > 0)
                         bw.ReportProgress(
-                            (int)QueryResult.Type.HasMatch,
-                            new QueryResult { ComputerName = targetComputer });
+                            (int)QueryResult.Type.Match,
+                            new QueryResult { ComputerName = targetComputer, ResultText = "Directory found." });
                     else
                         bw.ReportProgress(
                             (int)QueryResult.Type.NoMatch,
-                            new QueryResult { ComputerName = targetComputer });
+                            new QueryResult { ComputerName = targetComputer, ResultText = "File not found." });
                 }
             }
             catch (Exception ex)
             {
+                string errorMessage = ex.Message;
+                if (ex.Message.Contains("(")) ;
+                errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
                 bw.ReportProgress(
-                    (int)QueryResult.Type.Error,
-                    new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
+                    (int)QueryResult.Type.NoMatch,
+                    new QueryResult { ComputerName = targetComputer, ResultText = errorMessage});
             }
 
 
@@ -207,18 +206,21 @@ namespace Splice_Admin.Views.Desktop
             try
             {
                 if (searcher.Get().Count > 0)
+                {
+
                     bw.ReportProgress(
-                        (int)QueryResult.Type.HasMatch,
-                        new QueryResult { ComputerName = targetComputer });
+                        (int)QueryResult.Type.Match,
+                        new QueryResult { ComputerName = targetComputer, ResultText = "Service found." });
+                }
                 else
                     bw.ReportProgress(
                         (int)QueryResult.Type.NoMatch,
-                        new QueryResult { ComputerName = targetComputer });
+                        new QueryResult { ComputerName = targetComputer, ResultText = "Service not found." });
             }
             catch (Exception ex)
             {
                 bw.ReportProgress(
-                    (int)QueryResult.Type.Error,
+                    (int)QueryResult.Type.NoMatch,
                     new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
             }
         }
@@ -263,17 +265,17 @@ namespace Splice_Admin.Views.Desktop
 
                     if (hasMatch)
                         bw.ReportProgress(
-                            (int)QueryResult.Type.HasMatch,
-                            new QueryResult { ComputerName = targetComputer });
+                            (int)QueryResult.Type.Match,
+                            new QueryResult { ComputerName = targetComputer, ResultText = "Application found." });
                     else
                         bw.ReportProgress(
                             (int)QueryResult.Type.NoMatch,
-                            new QueryResult { ComputerName = targetComputer });
+                            new QueryResult { ComputerName = targetComputer, ResultText = "Application not found." });
                 }
                 catch (Exception ex)
                 {
                     bw.ReportProgress(
-                        (int)QueryResult.Type.Error,
+                        (int)QueryResult.Type.NoMatch,
                         new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
                 }
 
@@ -324,17 +326,17 @@ namespace Splice_Admin.Views.Desktop
                     IntPtr server = WtsApi.WTSOpenServer(targetComputer);
                     if (WtsApi.IsUserLoggedOn(server, searchPhrase))
                         bw.ReportProgress(
-                            (int)QueryResult.Type.HasMatch,
-                            new QueryResult { ComputerName = targetComputer });
+                            (int)QueryResult.Type.Match,
+                            new QueryResult { ComputerName = targetComputer, ResultText = "User logged in." });
                     else
                         bw.ReportProgress(
                             (int)QueryResult.Type.NoMatch,
-                            new QueryResult { ComputerName = targetComputer });
+                            new QueryResult { ComputerName = targetComputer, ResultText = "User not logged in." });
                 }
                 catch (Exception ex)
                 {
                     bw.ReportProgress(
-                        (int)QueryResult.Type.Error,
+                        (int)QueryResult.Type.NoMatch,
                         new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
                 }
             }
@@ -367,17 +369,17 @@ namespace Splice_Admin.Views.Desktop
 
                     if (hasMatch)
                         bw.ReportProgress(
-                            (int)QueryResult.Type.HasMatch,
-                            new QueryResult { ComputerName = targetComputer });
+                            (int)QueryResult.Type.Match,
+                            new QueryResult { ComputerName = targetComputer, ResultText = "User logged in." });
                     else
                         bw.ReportProgress(
                             (int)QueryResult.Type.NoMatch,
-                            new QueryResult { ComputerName = targetComputer });
+                            new QueryResult { ComputerName = targetComputer, ResultText = "User not logged in." });
                 }
                 catch (Exception ex)
                 {
                     bw.ReportProgress(
-                        (int)QueryResult.Type.Error,
+                        (int)QueryResult.Type.NoMatch,
                         new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
                 }
             }

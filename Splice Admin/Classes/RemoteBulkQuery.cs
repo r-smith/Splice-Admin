@@ -21,9 +21,8 @@ namespace Splice_Admin.Classes
     {
         public enum Type
         {
-            HasMatch = 0,
+            Match = 0,
             NoMatch = 1,
-            Error = 2,
             ProgressReport = 100
         }
 

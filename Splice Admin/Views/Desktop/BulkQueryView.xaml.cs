@@ -91,10 +91,10 @@ namespace Splice_Admin.Views.Desktop
                         directorySearcher.Filter = ("(objectClass=computer)");
                         break;
                     case DomainComputer.Server:
-                        directorySearcher.Filter = ("(&(objectClass=computer)(| (operatingSystem=Windows Server *)(operatingSystem=Windows 2000 Server) ))");
+                        directorySearcher.Filter = ("(&(objectClass=computer)(| (operatingSystem=Windows Server*)(operatingSystem=Windows 2000 Server) ))");
                         break;
                     case DomainComputer.Workstation:
-                        directorySearcher.Filter = ("(&(objectClass=computer)(!operatingSystem=Windows Server *)(!operatingSystem=Windows 2000 Server))");
+                        directorySearcher.Filter = ("(&(objectClass=computer)(!operatingSystem=Windows Server*)(!operatingSystem=Windows 2000 Server))");
                         break;
                     default:
                         directorySearcher.Filter = ("(objectClass=computer)");
