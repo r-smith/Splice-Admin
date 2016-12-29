@@ -19,6 +19,7 @@ namespace Splice_Admin.Views.Desktop
     public partial class MainWindow : Window
     {
         List<string> _DomainComputerList;
+        BulkQueryView _BulkQueryView = new BulkQueryView();
 
         public MainWindow()
         {
@@ -121,6 +122,8 @@ namespace Splice_Admin.Views.Desktop
                 case "Tasks":
                     btnTasks.RaiseEvent(newEventArgs);
                     break;
+                case "Bulk Query":
+                    return;
                 default:
                     btnSystemInfo.RaiseEvent(newEventArgs);
                     break;
@@ -231,7 +234,7 @@ namespace Splice_Admin.Views.Desktop
                 case "Bulk Query":
                     SelectedTarget.Visibility = Visibility.Collapsed;
                     txtTargetComputer.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#999"));
-                    contentControl.Content = new BulkQueryView();
+                    contentControl.Content = _BulkQueryView;
                     break;
                 default:
                     MessageBox.Show("Button not defined.");

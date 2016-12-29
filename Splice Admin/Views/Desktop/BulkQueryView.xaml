@@ -8,74 +8,178 @@
              d:DesignHeight="300" d:DesignWidth="300">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <Grid Background="White">
-        <StackPanel Margin="15">
-            <GroupBox Header="Search Parameters"
-                      Margin="10"
-                      Padding="10"
-                      Background="#fbfbfb">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0"
-                               Grid.Column="0"
-                               Text="Query Type"
-                               FontSize="14"
-                               HorizontalAlignment="Right"
-                               VerticalAlignment="Center"
-                               Margin="0,0,15,0"
-                               />
-                    <ComboBox Grid.Row="0"
-                              Grid.Column="1"
-                              FontSize="14"
-                              Width="240"
-                              SelectedIndex="0"
-                              Name="cboQueryType"
-                              FocusManager.FocusedElement="{Binding ElementName=txtSearchPhrase}"
-                              HorizontalAlignment="Left"
-                              VerticalAlignment="Center">
-                        <ListBoxItem Content="File or directory (absolute path)"/>
-                        <ListBoxItem Content="Installed application"/>
-                        <ListBoxItem Content="Logged on user"/>
-                        <ListBoxItem Content="Windows service"/>
-                    </ComboBox>
+        <Grid Background="White">
+            <StackPanel Margin="15">
 
-                    <TextBlock Grid.Row="1"
-                               Grid.Column="0"
-                               Text="Search Phrase"
-                               FontSize="14"
-                               HorizontalAlignment="Right"
-                               VerticalAlignment="Center"
-                               Margin="0,7,15,0"
-                               />
-                    <TextBox Grid.Row="1"
-                             Grid.Column="1"
-                             Name="txtSearchPhrase"
-                             FontSize="14"
-                             VerticalContentAlignment="Center"
-                             Height="28"
-                             
-                             Margin="0,7,0,0"
-                             />
-                </Grid>
-            </GroupBox>
+                <Popup Name="popup"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"
+                       PlacementTarget="{Binding ElementName=btnHelp}"
+                       VerticalOffset="-100"
+                       HorizontalOffset="40"
+                       Width="500"
+                       Height="450"
+                       PopupAnimation="Fade"
+                       IsOpen="False"
+                       StaysOpen="False">
+                    <Border Background="#fafaff" BorderBrush="Black" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ScrollViewer FontSize="14" Padding="7">
+                                <StackPanel>
+                                    <TextBlock Text="Bulk Query Help"
+                                               FontWeight="SemiBold"
+                                               FontSize="16"/>
+                                    <TextBlock Text="This feature performs searches across multiple computers.  Select your query type, then enter your search phrase.  You can manually specify a list of computers to target (comma separated), or choose one of the pre-set groups."
+                                               Margin="0,5,0,0"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="File or Directory"
+                                               Margin="0,15,0,0"
+                                               TextDecorations="Underline" />
+                                    <TextBlock Text="Check for the existance of a specific file or folder."
+                                               FontSize="12"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="The full path must exactly match.  No wildcards.  Spaces are ok.  No quotes.  Example:  'c:\program files (x86)\tcptrigger\tcptrigger.exe'"
+                                               Margin="15,5,0,0"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="Installed Application"
+                                               Margin="0,20,0,0"
+                                               TextDecorations="Underline" />
+                                    <TextBlock Text="Check if an application is installed."
+                                               FontSize="12"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="Search will match on partial strings.  Search will skip to the next target after the first match is found.  Example:  'flash' would match on 'Adobe Flash Player'"
+                                               Margin="15,5,0,0"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="Logged On User"
+                                               Margin="0,20,0,0"
+                                               TextDecorations="Underline" />
+                                    <TextBlock Text="Check if a user account is logged on."
+                                               FontSize="12"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="Username must match exactly.  No wildcards.  Do not include a domain portion.  Example:  'datauser05'"
+                                               Margin="15,5,0,0"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="Windows Service"
+                                               Margin="0,20,0,0"
+                                               TextDecorations="Underline" />
+                                    <TextBlock Text="Check if a Windows service is installed."
+                                               FontSize="12"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="Search will match on partial strings.  Search will skip to the next target after the first match is found.  Example:  'endpoint' would match on 'Symantec Enpoint Protection'"
+                                               Margin="15,5,0,0"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ScrollViewer>
 
-            <GroupBox Header="Target"
-                      Margin="10"
-                      Padding="10"
-                      Background="#fdfdfd">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel>
+                            <Button Grid.Row="1" Content="Close" Name="btnClosePopup" Click="btnClosePopup_Click" FontSize="13" Padding="0,4"/>
+                        </Grid>
+                    </Border>
+                </Popup>
+                <GroupBox Header="Search Parameters"
+                          Margin="10"
+                          Padding="10,10,10,3"
+                          Background="#fbfbfb">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Grid.Column="0"
+                                   Text="Query Type"
+                                   FontSize="14"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,15,0"
+                                   />
+                        <ComboBox Grid.Row="0"
+                                  Grid.Column="1"
+                                  FontSize="14"
+                                  Width="240"
+                                  Name="cboQueryType"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Center">
+                            <ListBoxItem Content="File or directory (absolute path)"/>
+                            <ListBoxItem Content="Installed application"/>
+                            <ListBoxItem Content="Logged on user"/>
+                            <ListBoxItem Content="Windows service"/>
+                        </ComboBox>
+
+                        <Button Grid.Column="2"
+                                Name="btnHelp"
+                                Width="30"
+                                HorizontalAlignment="Left"
+                                Margin="260,0,0,0"
+                                Click="btnHelp_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Name="buttonBorder" BorderThickness="0" CornerRadius="5" BorderBrush="#66c" Background="Transparent">
+                                        <Image Source="/Resources/questionMark-16.png" Width="16" Height="16" />
+                                    </Border>
+
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="buttonBorder" Property="BorderThickness" Value="1" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="buttonBorder" Property="Background" Value="#dddde6" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="0"
+                                   Text="Search Phrase"
+                                   FontSize="14"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   Margin="0,7,15,0"
+                                   />
+                        <TextBox Grid.Row="1"
+                                 Grid.Column="1"
+                                 Name="txtSearchPhrase"
+                                 FontSize="14"
+                                 VerticalContentAlignment="Center"
+                                 Height="28"
+                                 Margin="0,7,0,0"
+                                 />
+                        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,5,0,0">
+                            <TextBlock Name="tbQueryDescription"
+                                       TextWrapping="Wrap"
+                                       Visibility="Collapsed"
+                                       Foreground="#666"
+                                       Text="Description goes here..."/>
+                            <TextBlock Name="tbQueryNotes"
+                                       TextWrapping="Wrap"
+                                       Visibility="Collapsed"
+                                       Foreground="#666"
+                                       Text="Notes go here..."/>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Target"
+                          Margin="10"
+                          Padding="10"
+                          Background="#fdfdfd">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
                             <RadioButton Name="rdoManual"
                                          Content="Manually specify computers"
                                          IsChecked="True"
@@ -83,38 +187,62 @@
                                          FontSize="14"/>
                             <RadioButton Name="rdoAllDomainComputers"
                                          Content="All domain computers"
-                                     Margin="0,0,0,3"
-                                     FontSize="14"/>
-                        <RadioButton Name="rdoAllServers"
-                                     Content="All servers"
-                                     Margin="0,0,0,3"
-                                     FontSize="14"/>
+                                         Margin="0,0,0,3"
+                                         FontSize="14"/>
+                            <RadioButton Name="rdoAllServers"
+                                         Content="All servers"
+                                         Margin="0,0,0,3"
+                                         FontSize="14"/>
                             <RadioButton Name="rdoAllWorkstations"
-                                     Content="All workstations"
-                                     Margin="0,0,0,3"
-                                     FontSize="14"/>
+                                         Content="All workstations"
+                                         Margin="0,0,0,3"
+                                         FontSize="14"/>
                         </StackPanel>
-                    <TextBox Grid.Column="1"
-                             Name="txtTargetComputer"
-                             FontSize="14"
-                             VerticalContentAlignment="Top"
-                             VerticalScrollBarVisibility="Auto"
-                             TextWrapping="Wrap"
-                             IsEnabled="{Binding ElementName=rdoManual,Path=IsChecked}"
-                             Margin="20,0,0,0"
-                             Height="80" />
-                </Grid>
-            </GroupBox>
+                        <TextBox Grid.Column="1"
+                                 Name="txtTargetComputer"
+                                 FontSize="14"
+                                 VerticalContentAlignment="Top"
+                                 VerticalScrollBarVisibility="Auto"
+                                 TextWrapping="Wrap"
+                                 IsEnabled="{Binding ElementName=rdoManual,Path=IsChecked}"
+                                 Margin="20,0,0,0"
+                                 Height="80" />
+                    </Grid>
+                </GroupBox>
 
 
 
-            <Button Content="Perform Search"
-                    Click="Button_Click"
-                    HorizontalAlignment="Right"
-                    Margin="0,0,10,0"
-                    Width="120"
-                    Height="32" />
-        </StackPanel>
-    </Grid>
+                <Button Content="Perform Search"
+                        Click="Button_Click"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,10,0"
+                        Background="AliceBlue"
+                        >
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Name="buttonBorder" BorderThickness="1" BorderBrush="Black"
+                                    CornerRadius="3"
+                                    Background="{TemplateBinding Background}">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0">
+                                    <TextBlock Text="Perform Search"
+                                               Padding="8,4"
+                                               FontSize="16"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="buttonBorder" Property="Background" Value="#D8E8F6" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="buttonBorder" Property="Background" Value="#C0D0DF" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+
+        </Grid>
     </ScrollViewer>
 </UserControl>

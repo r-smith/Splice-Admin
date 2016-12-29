@@ -3,16 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Splice_Admin.Views.Desktop
 {
@@ -24,10 +16,24 @@ namespace Splice_Admin.Views.Desktop
         public BulkQueryView()
         {
             InitializeComponent();
+
+            cboQueryType.SelectedIndex = 0;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtSearchPhrase.Text))
+            {
+                MessageBox.Show("You must enter a valid search phrase.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                txtSearchPhrase.Focus();
+                return;
+            }
+            else if (rdoManual.IsChecked == true && string.IsNullOrEmpty(txtTargetComputer.Text))
+            {
+                MessageBox.Show("You must enter a comma-separated list of target computers.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                txtTargetComputer.Focus();
+                return;
+            }
             var bulkQuery = new RemoteBulkQuery();
             bulkQuery.TargetComputerList = new List<string>();
             if (rdoManual.IsChecked == true)
@@ -115,6 +121,16 @@ namespace Splice_Admin.Views.Desktop
             All,
             Server,
             Workstation
+        }
+
+        private void btnHelp_Click(object sender, RoutedEventArgs e)
+        {
+            popup.IsOpen = true;
+        }
+
+        private void btnClosePopup_Click(object sender, RoutedEventArgs e)
+        {
+            popup.IsOpen = false;
         }
     }
 }

@@ -2,21 +2,11 @@
 using RemoteDesktopServicesAPI;
 using Splice_Admin.Classes;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
 using System.Management;
 using System.ServiceProcess;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace Splice_Admin.Views.Desktop
 {
@@ -29,6 +19,7 @@ namespace Splice_Admin.Views.Desktop
         private ObservableCollection<string> NoMatchCollection = new ObservableCollection<string>();
         private ObservableCollection<string> ErrorCollection = new ObservableCollection<string>();
         private BackgroundWorker bw;
+        private int SearchItemsRemaining;
 
         public BulkQueryWindow(RemoteBulkQuery bulkQuery)
         {
@@ -57,6 +48,8 @@ namespace Splice_Admin.Views.Desktop
                     break;
             }
             tbSearchPhrase.Text = bulkQuery.SearchPhrase;
+            SearchItemsRemaining = bulkQuery.TargetComputerList.Count;
+            txtRemainingCount.Text = $"Remaining: {SearchItemsRemaining}";
 
             // Setup a background thread.
             bw = new BackgroundWorker();
@@ -117,6 +110,7 @@ namespace Splice_Admin.Views.Desktop
         private void bgThread_RunQueryCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             txtStatus.Text = "Search complete";
+            txtRemainingCount.Text = "";
         }
 
         private void bgThread_RunQueryProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -135,26 +129,41 @@ namespace Splice_Admin.Views.Desktop
                     break;
                 case ((int)QueryResult.Type.ProgressReport):
                     txtStatus.Text = "Querying: " + queryResult.ComputerName;
+                    txtRemainingCount.Text = $"Remaining: {--SearchItemsRemaining}";
                     break;
             }
         }
 
         private void SearchForFile(string targetComputer, string searchPhrase)
         {
+            searchPhrase = searchPhrase.TrimEnd('\\');
+
+            // Setup WMI query.
+            var options = new ConnectionOptions();
+            var scope = new ManagementScope($@"\\{targetComputer}\root\CIMV2", options);
+            var query = new ObjectQuery($@"SELECT * FROM CIM_DataFile WHERE Name = '{searchPhrase.Replace(@"\", @"\\")}'");
+            var searcher = new ManagementObjectSearcher(scope, query);
+
             try
             {
-                var pathRoot = Path.GetPathRoot(searchPhrase);
-                var pathFolder = searchPhrase.Substring(pathRoot.Length);
-                var uncPath = $@"\\{targetComputer}\{pathRoot.Substring(0, 1)}$\{pathFolder}";
-
-                if (File.Exists(uncPath) || Directory.Exists(uncPath))
+                if (searcher.Get().Count > 0)
                     bw.ReportProgress(
                         (int)QueryResult.Type.HasMatch,
                         new QueryResult { ComputerName = targetComputer });
                 else
-                    bw.ReportProgress(
-                        (int)QueryResult.Type.NoMatch,
-                        new QueryResult { ComputerName = targetComputer });
+                {
+                    query = new ObjectQuery($@"SELECT * FROM Win32_Directory WHERE Name = '{searchPhrase.Replace(@"\", @"\\")}'");
+                    searcher = new ManagementObjectSearcher(scope, query);
+
+                    if (searcher.Get().Count > 0)
+                        bw.ReportProgress(
+                            (int)QueryResult.Type.HasMatch,
+                            new QueryResult { ComputerName = targetComputer });
+                    else
+                        bw.ReportProgress(
+                            (int)QueryResult.Type.NoMatch,
+                            new QueryResult { ComputerName = targetComputer });
+                }
             }
             catch (Exception ex)
             {
@@ -162,6 +171,29 @@ namespace Splice_Admin.Views.Desktop
                     (int)QueryResult.Type.Error,
                     new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
             }
+
+
+            //try
+            //{
+            //    var pathRoot = Path.GetPathRoot(searchPhrase);
+            //    var pathFolder = searchPhrase.Substring(pathRoot.Length);
+            //    var uncPath = $@"\\{targetComputer}\{pathRoot.Substring(0, 1)}$\{pathFolder}";
+
+            //    if (File.Exists(uncPath) || Directory.Exists(uncPath))
+            //        bw.ReportProgress(
+            //            (int)QueryResult.Type.HasMatch,
+            //            new QueryResult { ComputerName = targetComputer });
+            //    else
+            //        bw.ReportProgress(
+            //            (int)QueryResult.Type.NoMatch,
+            //            new QueryResult { ComputerName = targetComputer });
+            //}
+            //catch (Exception ex)
+            //{
+            //    bw.ReportProgress(
+            //        (int)QueryResult.Type.Error,
+            //        new QueryResult { ComputerName = targetComputer, ResultText = ex.Message });
+            //}
         }
 
         private void SearchForWindowsService(string targetComputer, string searchPhrase)
@@ -171,7 +203,7 @@ namespace Splice_Admin.Views.Desktop
             var scope = new ManagementScope($@"\\{targetComputer}\root\CIMV2", options);
             var query = new ObjectQuery($"SELECT * FROM Win32_Service WHERE DisplayName LIKE '%{searchPhrase}%' OR Name LIKE '%{searchPhrase}%'");
             var searcher = new ManagementObjectSearcher(scope, query);
-            
+
             try
             {
                 if (searcher.Get().Count > 0)

@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Background="#fafafa"
         Title="Splice Admin - Bulk Query"
-        Height="400" Width="650"
+        Height="475" Width="600"
         MinHeight="250" MinWidth="300">
     <Grid>
         <Grid.RowDefinitions>
@@ -112,12 +112,21 @@
         </Grid>
 
         <Border Background="#303b46" Grid.Row="2" BorderThickness="0,2,0,0" BorderBrush="#777">
-            <TextBlock Name="txtStatus"
-                       Foreground="White"
-                       HorizontalAlignment="Right"
-                       FontSize="15"
-                       Padding="0,5,20,5"
-                       VerticalAlignment="Center" Text="Status" />
+            <DockPanel>
+                <TextBlock Name="txtRemainingCount"
+                           DockPanel.Dock="Left"
+                           Text="Remaining: 0"
+                           Foreground="#eee"
+                           FontSize="13"
+                           Padding="10,0,0,0"
+                           VerticalAlignment="Center" />
+                <TextBlock Name="txtStatus"
+                           Foreground="White"
+                           HorizontalAlignment="Right"
+                           FontSize="15"
+                           Padding="0,5,20,5"
+                           VerticalAlignment="Center" Text="Status" />
+            </DockPanel>
         </Border>
     </Grid>
 </Window>

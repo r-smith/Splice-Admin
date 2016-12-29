@@ -163,6 +163,16 @@ namespace Splice_Admin.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap questionMark_16 {
+            get {
+                object obj = ResourceManager.GetObject("questionMark_16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap success_48 {
             get {
                 object obj = ResourceManager.GetObject("success_48", resourceCulture);
