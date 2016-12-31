@@ -67,6 +67,9 @@ namespace Splice_Admin.Views.Desktop
                     bulkQuery.SearchType = RemoteBulkQuery.QueryType.LoggedOnUser;
                     break;
                 case 3:
+                    bulkQuery.SearchType = RemoteBulkQuery.QueryType.Process;
+                    break;
+                case 4:
                     bulkQuery.SearchType = RemoteBulkQuery.QueryType.Service;
                     break;
                 default:
@@ -85,19 +88,25 @@ namespace Splice_Admin.Views.Desktop
             using (DirectoryEntry directoryEntry = new DirectoryEntry($"LDAP://{Environment.UserDomainName}"))
             using (DirectorySearcher directorySearcher = new DirectorySearcher(directoryEntry))
             {
+                var ldapFilter = "(&(objectClass=computer)(!userAccountControl:1.2.840.113556.1.4.803:=2)";
+                if (chkOnlyActiveComputers.IsChecked == true)
+                {
+                    var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30).ToString("yyyyMMddHHmmss.f'Z'");
+                    ldapFilter += $"(whenChanged>={thirtyDaysAgo})";
+                }
+
                 switch (searchType)
                 {
                     case DomainComputer.All:
-                        directorySearcher.Filter = ("(objectClass=computer)");
+                        directorySearcher.Filter = ldapFilter;
                         break;
                     case DomainComputer.Server:
-                        directorySearcher.Filter = ("(&(objectClass=computer)(| (operatingSystem=Windows Server*)(operatingSystem=Windows 2000 Server) ))");
+                        ldapFilter += "(|(operatingSystem=Windows Server*)(operatingSystem=Windows 2000 Server)))";
+                        directorySearcher.Filter = ldapFilter;
                         break;
                     case DomainComputer.Workstation:
-                        directorySearcher.Filter = ("(&(objectClass=computer)(!operatingSystem=Windows Server*)(!operatingSystem=Windows 2000 Server))");
-                        break;
-                    default:
-                        directorySearcher.Filter = ("(objectClass=computer)");
+                        ldapFilter += "(!operatingSystem=Windows Server*)(!operatingSystem=Windows 2000 Server))";
+                        directorySearcher.Filter = ldapFilter;
                         break;
                 }
                 directorySearcher.SizeLimit = int.MaxValue;

@@ -39,6 +39,9 @@ namespace Splice_Admin.Views.Desktop
                 case RemoteBulkQuery.QueryType.LoggedOnUser:
                     tbSearchType.Text = "Logged On User";
                     break;
+                case RemoteBulkQuery.QueryType.Process:
+                    tbSearchType.Text = "Running Process";
+                    break;
                 case RemoteBulkQuery.QueryType.Service:
                     tbSearchType.Text = "Windows Service";
                     break;
@@ -92,6 +95,15 @@ namespace Splice_Admin.Views.Desktop
                             (int)QueryResult.Type.ProgressReport,
                             new QueryResult { ComputerName = targetComputer });
                         SearchForLoggedOnUser(targetComputer, bulkQuery.SearchPhrase);
+                    }
+                    break;
+                case RemoteBulkQuery.QueryType.Process:
+                    foreach (var targetComputer in bulkQuery.TargetComputerList)
+                    {
+                        bw.ReportProgress(
+                            (int)QueryResult.Type.ProgressReport,
+                            new QueryResult { ComputerName = targetComputer });
+                        SearchForProcess(targetComputer, bulkQuery.SearchPhrase);
                     }
                     break;
                 case RemoteBulkQuery.QueryType.Service:
@@ -376,6 +388,70 @@ namespace Splice_Admin.Views.Desktop
                         (int)QueryResult.Type.NoMatch,
                         new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
                 }
+            }
+        }
+
+
+        private void SearchForProcess(string targetComputer, string searchPhrase)
+        {
+            // Setup WMI Query.
+            var options = new ConnectionOptions();
+            var scope = new ManagementScope($@"\\{targetComputer}\root\CIMV2", options);
+            var query = new ObjectQuery($"SELECT * FROM Win32_Process WHERE Name LIKE '%{searchPhrase}%'");
+            var searcher = new ManagementObjectSearcher(scope, query);
+            
+            try
+            {
+                if (searcher.Get().Count > 0)
+                {
+                    // Retrieve a list of running processes.
+                    foreach (ManagementObject m in searcher.Get())
+                    {
+                        if (m["Name"] != null)
+                        {
+                            var resultText = m["Name"].ToString();
+                            if (m["ProcessId"] != null) resultText += $" ({m["ProcessId"]})";
+
+                            var argList = new string[] { string.Empty, string.Empty };
+                            int returnVal = Convert.ToInt32(m.InvokeMethod("GetOwner", argList));
+
+                            string processOwner = (returnVal == 0) ? argList[0] : string.Empty;
+
+                            switch (processOwner.ToUpper())
+                            {
+                                case ("SYSTEM"):
+                                    processOwner = "System";
+                                    break;
+                                case ("LOCAL SERVICE"):
+                                    processOwner = "Local Service";
+                                    break;
+                                case ("NETWORK SERVICE"):
+                                    processOwner = "Network Service";
+                                    break;
+                            }
+
+                            if (processOwner.Length > 0) resultText += $" ({processOwner})";
+
+                            bw.ReportProgress(
+                                (int)QueryResult.Type.Match,
+                                new QueryResult { ComputerName = targetComputer, ResultText = resultText });
+                        }
+                    }
+                }
+                else
+                    bw.ReportProgress(
+                        (int)QueryResult.Type.NoMatch,
+                        new QueryResult { ComputerName = targetComputer, ResultText = "Process not found." });
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message;
+                if (ex.Message.Contains("("))
+                    errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
+                bw.ReportProgress(
+                    (int)QueryResult.Type.NoMatch,
+                    new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
             }
         }
 

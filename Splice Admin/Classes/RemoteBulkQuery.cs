@@ -9,6 +9,7 @@ namespace Splice_Admin.Classes
             File,
             InstalledApplication,
             LoggedOnUser,
+            Process,
             Service
         }
 

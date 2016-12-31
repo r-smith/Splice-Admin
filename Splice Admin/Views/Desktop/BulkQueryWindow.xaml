@@ -171,7 +171,7 @@
                     </Style>
                 </DataGrid.CellStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding ComputerName}" Header="Name">
+                    <DataGridTextColumn Binding="{Binding ComputerName}" Header="Name" MinWidth="60">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="{x:Type TextBlock}">
                                 <Style.Triggers>
@@ -185,7 +185,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Binding="{Binding ResultText}" Header="Result">
+                    <DataGridTextColumn Binding="{Binding ResultText}" Header="Result" MinWidth="100">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="{x:Type TextBlock}">
                                 <Style.Triggers>
@@ -305,7 +305,7 @@
                     </Style>
                 </DataGrid.CellStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding ComputerName}" Header="Name">
+                    <DataGridTextColumn Binding="{Binding ComputerName}" Header="Name" MinWidth="60">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="{x:Type TextBlock}">
                                 <Style.Triggers>
@@ -319,7 +319,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Binding="{Binding ResultText}" Header="Result">
+                    <DataGridTextColumn Binding="{Binding ResultText}" Header="Result" MinWidth="100">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="{x:Type TextBlock}">
                                 <Style.Triggers>

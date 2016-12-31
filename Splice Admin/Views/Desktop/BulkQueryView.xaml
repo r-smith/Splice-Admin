@@ -4,8 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Splice_Admin.Views.Desktop"
+             xmlns:classes="clr-namespace:Splice_Admin.Classes"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+        <classes:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+    </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Background="White">
@@ -74,11 +80,12 @@
                                                TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ScrollViewer>
-
                             <Button Grid.Row="1" Content="Close" Name="btnClosePopup" Click="btnClosePopup_Click" FontSize="13" Padding="0,4"/>
                         </Grid>
                     </Border>
                 </Popup>
+
+
                 <GroupBox Header="Search Parameters"
                           Margin="10"
                           Padding="10,10,10,3"
@@ -111,6 +118,7 @@
                             <ListBoxItem Content="File or directory (absolute path)"/>
                             <ListBoxItem Content="Installed application"/>
                             <ListBoxItem Content="Logged on user"/>
+                            <ListBoxItem Content="Running process"/>
                             <ListBoxItem Content="Windows service"/>
                         </ComboBox>
 
@@ -198,6 +206,17 @@
                                          Margin="0,0,0,3"
                                          FontSize="14"/>
                         </StackPanel>
+                        <StackPanel Grid.Column="1"
+                                    Margin="40,0,0,0"
+                                    Visibility="{Binding ElementName=rdoManual,Path=IsChecked,Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                            <CheckBox Name="chkOnlyActiveComputers"
+                                      IsChecked="True">
+                                <TextBlock Text="Only include computers that have been active in the past 30 days."
+                                           Foreground="#444"
+                                           TextWrapping="Wrap"/>
+                            </CheckBox>
+                        </StackPanel>
+                        
                         <TextBox Grid.Column="1"
                                  Name="txtTargetComputer"
                                  FontSize="14"
@@ -205,8 +224,10 @@
                                  VerticalScrollBarVisibility="Auto"
                                  TextWrapping="Wrap"
                                  IsEnabled="{Binding ElementName=rdoManual,Path=IsChecked}"
+                                 Visibility="{Binding ElementName=rdoManual,Path=IsChecked,Converter={StaticResource BooleanToVisibility}}"
                                  Margin="20,0,0,0"
                                  Height="80" />
+
                     </Grid>
                 </GroupBox>
 
