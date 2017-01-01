@@ -3,7 +3,7 @@ Splice Admin
 
 Splice Admin is a remote Windows administration tool.  It allows you to retrieve information and interact with remote machines on your network.
 
-### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/download/v2016.1229/SpliceAdm.exe)
+### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/download/v2017.0101/SpliceAdm.exe)
 ### [Click here to download the source](https://github.com/R-Smith/Splice-Admin/archive/master.zip)
 
 ##### Notes
@@ -12,8 +12,15 @@ Splice Admin is a remote Windows administration tool.  It allows you to retrieve
 * Most features require WMI to be running on the target computer.
 * Local administrative rights are required on the target computer.
 
-### Changes for v2016.1229
-* New bulk query feature.  Perform various types of searches across multiple computers in your environment.  You can currently search for files, installed applications, logged on users, and installed services.  The target computers can be entered in a comma-separated list, or choose one of the pre-set options (all domain computers, all workstations, or all servers).
+### Changes for v2017.0101
+If you haven't seen the bulk query feature yet, check it out.  You can easily search multiple computers (or even all computers) in your environment for installed applications, services, running processes, logged in users, and files or directories.
+* Completely revamped the bulk query feature.  Rather than a simple 'match' or 'no match', searches now include detailed results.  For example, if searching for installed applications and your search phrase is 'adobe', you will get a list which includes the full title of every application with 'adobe' in the name, as well as the version number, for every computer in your target list.   When searching services, search results will include the startup type and the current status of the service.
+* Bulk query:  The pre-defined target computer groups now exclude disabled computers.
+* Bulk query:  New option to only include computers that have been active in the past 30 days.
+* Bulk query:  Added the ability to search for running processes.
+* Applications:  Remote applications were previously retrieved through the Remote Registry service.  The registry values are now retrieved through WMI which results in faster data retrieval.  The application will fall back to using the Remote Registry service if the target OS does not support the WMI registry provider.
+* Bulk query:  Searching for applications now also goes through the WMI registry provider with a fallback to remote registry.  This results in faster application searches.
+* Added: Tasks -> Windows Remote Assistance.  A shortcut to connect to the target computer using the Windows Remote Assistance tool.  This will only work if your environment is configured to allow unsolicited remote assistance.
 
 
 Features
