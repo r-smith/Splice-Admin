@@ -15,7 +15,7 @@ namespace Splice_Admin.Views.Desktop
             InitializeComponent();
             
             Version version = typeof(MainWindow).Assembly.GetName().Version;
-            tbVersion.Text = $"Build: {version.Major}.{version.Minor}";
+            tbVersion.Text = $"Build: {version.Major}.{version.Minor.ToString("D4")}";
         }
 
         private void tbChangeLog_MouseDown(object sender, MouseButtonEventArgs e)
