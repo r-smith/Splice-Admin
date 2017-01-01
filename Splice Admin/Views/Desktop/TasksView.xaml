@@ -80,6 +80,16 @@
                                     Content="Microsoft Remote Desktop">
                     </Button>
 
+                    <!-- Microsoft RDP Button -->
+                    <Button Template="{StaticResource ResourceKey=TaskButtonTemplate}"
+                                    Click="btnRemoteAssistance_Click"
+                                    HorizontalAlignment="Left"
+                                    IsTabStop="False"
+                                    FocusVisualStyle="{x:Null}"
+                                    Foreground="#586e75"
+                                    Content="Windows Remote Assistance">
+                    </Button>
+
                     <!-- Event Log Viewer Button -->
                     <Button Template="{StaticResource ResourceKey=TaskButtonTemplate}"
                                     Click="btnEventLogViewer"

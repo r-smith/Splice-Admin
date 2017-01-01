@@ -176,6 +176,42 @@ namespace Splice_Admin.Views.Desktop
         }
 
 
+        private void btnRemoteAssistance_Click(object sender, RoutedEventArgs e)
+        {
+            bool didTaskSucceed = false;
+            string processPath =
+                Environment.SystemDirectory + @"\msra.exe";
+            string processArguments =
+                $"/offerRA {GlobalVar.TargetComputerName}";
+
+            try
+            {
+                Process.Start(processPath, processArguments);
+                didTaskSucceed = true;
+            }
+            catch
+            { }
+
+            if (!didTaskSucceed)
+            {
+                // Get a reference to MainWindow along with the coordinates of the current user control.
+                Point controlPosition = this.PointToScreen(new Point(0d, 0d));
+                var mainWindow = Window.GetWindow(this);
+
+                // Setup a DialogResult which will build the confirmation dialog box.
+                var dialog = new DialogResult();
+                dialog.DialogTitle = "Error";
+                dialog.DialogBody = "Failed to launch the Microsoft Remote Desktop client.";
+                dialog.DialogIconPath = "/Resources/error-48.png";
+                dialog.ButtonIconPath = "/Resources/checkmark-24.png";
+                dialog.ButtonText = "OK";
+                dialog.IsCancelVisible = false;
+
+                DialogWindow.DisplayDialog(mainWindow, dialog, controlPosition);
+            }
+        }
+
+
         [DllImport("User32.dll")]
         static extern int SetForegroundWindow(IntPtr point);
 
