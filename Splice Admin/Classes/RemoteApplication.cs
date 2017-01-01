@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.ServiceProcess;
-using System.Windows;
 
 namespace Splice_Admin.Classes
 {

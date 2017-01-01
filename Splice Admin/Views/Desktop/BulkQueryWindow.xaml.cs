@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Management;
 using System.ServiceProcess;
 using System.Windows;
@@ -227,70 +228,188 @@ namespace Splice_Admin.Views.Desktop
 
         private void SearchForInstalledApplication(string targetComputer, string searchPhrase)
         {
-            const string uninstallKey64 = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
-            const string uninstallKey32 = @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
-            const string serviceName = "RemoteRegistry";
-            bool isLocal = targetComputer.ToUpper() == Environment.MachineName.ToUpper() ? true : false;
-            bool isServiceRunning = true;
+            const string uninstallKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+            const string uninstallKey32on64 = @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
 
-            // If the target computer is remote, then start the Remote Registry service.
-            using (var sc = new ServiceController(serviceName, targetComputer))
+            var managementScope = new ManagementScope($@"\\{targetComputer}\root\CIMV2");
+            ManagementBaseObject inParams = null;
+            ManagementBaseObject outParams = null;
+
+            try
             {
-                try
+                using (var wmiRegistry = new ManagementClass(managementScope, new ManagementPath("StdRegProv"), null))
                 {
-                    if (!isLocal && sc.Status != ServiceControllerStatus.Running)
-                    {
-                        isServiceRunning = false;
-                        sc.Start();
-                        sc.WaitForStatus(ServiceControllerStatus.Running);
-                    }
-                }
-                catch (Exception)
-                {
-                }
+                    List<string> subKeys = null;
+                    List<string> subKeys32on64 = null;
+                    var uninstallKeys = new List<string>();
 
-                try
-                {
+                    // Get uninstall subkeys.
+                    inParams = wmiRegistry.GetMethodParameters("EnumKey");
+                    inParams["sSubKeyName"] = uninstallKey;
+                    outParams = wmiRegistry.InvokeMethod("EnumKey", inParams, null);
+                    if (outParams["sNames"] != null)
+                        subKeys = new List<string>((string[])outParams["sNames"]).Select(x => $@"{uninstallKey}\{x}").ToList();
+
+                    // Get 32-bit on 64-bit uninstall subkeys.
+                    inParams["sSubKeyName"] = uninstallKey32on64;
+                    outParams = wmiRegistry.InvokeMethod("EnumKey", inParams, null);
+                    if (outParams["sNames"] != null)
+                        subKeys32on64 = new List<string>((string[])outParams["sNames"]).Select(x => $@"{uninstallKey32on64}\{x}").ToList();
+
+                    // Combine lists of keys.
+                    if (subKeys != null)
+                        uninstallKeys.AddRange(subKeys);
+                    if (subKeys32on64 != null)
+                        uninstallKeys.AddRange(subKeys32on64);
+
+                    // Enumerate keys.
                     int numberOfMatchingApplications = 0;
+                    foreach (string subKey in uninstallKeys)
+                    {
+                        // Get SystemComponent (DWORD) value.  Skip key if this value exists and is set to '1'.
+                        inParams = wmiRegistry.GetMethodParameters("GetDWORDValue");
+                        inParams["sSubKeyName"] = subKey;
+                        inParams["sValueName"] = "SystemComponent";
+                        outParams = wmiRegistry.InvokeMethod("GetDWORDValue", inParams, null);
+                        if (outParams["uValue"] != null && (UInt32)outParams["uValue"] == 1)
+                            continue;
 
-                    using (RegistryKey key = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, targetComputer, RegistryView.Registry64))
-                    using (RegistryKey mainKey64 = key.OpenSubKey(uninstallKey64))
-                        numberOfMatchingApplications += EnumerateUninstallKeys(mainKey64, searchPhrase, targetComputer);
+                        // Get ParentKeyName (String) value.  Skip key if this value exists.
+                        inParams = wmiRegistry.GetMethodParameters("GetStringValue");
+                        inParams["sSubKeyName"] = subKey;
+                        inParams["sValueName"] = "ParentKeyName";
+                        outParams = wmiRegistry.InvokeMethod("GetStringValue", inParams, null);
+                        if (outParams["sValue"] != null && ((string)outParams["sValue"]).Length > 0)
+                            continue;
 
-                    using (RegistryKey key = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, targetComputer, RegistryView.Registry32))
-                    using (RegistryKey mainKey32 = key.OpenSubKey(uninstallKey64))
-                        numberOfMatchingApplications += EnumerateUninstallKeys(mainKey32, searchPhrase, targetComputer);
+                        // Get ReleaseType (String) value.  Skip key if this value contains 'Update' or 'Hotfix'.
+                        inParams["sSubKeyName"] = subKey;
+                        inParams["sValueName"] = "ReleaseType";
+                        outParams = wmiRegistry.InvokeMethod("GetStringValue", inParams, null);
+                        if (outParams["sValue"] != null && (((string)outParams["sValue"]).Contains("Update") || ((string)outParams["sValue"]).Equals("Hotfix")))
+                            continue;
+                        
+                        // Get DisplayName (String) value.
+                        inParams["sSubKeyName"] = subKey;
+                        inParams["sValueName"] = "DisplayName";
+                        outParams = wmiRegistry.InvokeMethod("GetStringValue", inParams, null);
+                        if (outParams["sValue"] != null)
+                        {
+                            // Check if DisplayName contains the search phrase.
+                            var appName = (string)outParams["sValue"];
+                            if (appName.ToUpper().Contains(searchPhrase.ToUpper()))
+                            {
+                                // Match.  Get the version and then report progress.
+                                // Get DisplayVersion (String) value.
+                                ++numberOfMatchingApplications;
+                                inParams["sSubKeyName"] = subKey;
+                                inParams["sValueName"] = "DisplayVersion";
+                                outParams = wmiRegistry.InvokeMethod("GetStringValue", inParams, null);
+
+                                string resultText;
+                                if (outParams["sValue"] != null)
+                                    resultText = $"{appName} [{(string)outParams["sValue"]}]";
+                                else
+                                    resultText = appName;
+
+                                bw.ReportProgress(
+                                    (int)QueryResult.Type.Match,
+                                    new QueryResult { ComputerName = targetComputer, ResultText = resultText });
+                            }
+                        }
+                    }
 
                     if (numberOfMatchingApplications == 0)
                         bw.ReportProgress(
                             (int)QueryResult.Type.NoMatch,
                             new QueryResult { ComputerName = targetComputer, ResultText = "Application not found." });
                 }
-                catch (Exception ex)
-                {
-                    string errorMessage = ex.Message;
-                    if (ex.Message.Contains("("))
-                        errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+            }
 
-                    bw.ReportProgress(
-                        (int)QueryResult.Type.NoMatch,
-                        new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
-                }
+            catch (ManagementException ex) when (ex.ErrorCode == ManagementStatus.NotFound)
+            {
+                const string serviceName = "RemoteRegistry";
+                bool isLocal = targetComputer.ToUpper() == Environment.MachineName.ToUpper() ? true : false;
+                bool isServiceRunning = true;
 
-
-                // Cleanup.
-                if (!isLocal && !isServiceRunning)
+                // If the target computer is remote, then start the Remote Registry service.
+                using (var sc = new ServiceController(serviceName, targetComputer))
                 {
                     try
                     {
-                        if (sc != null)
-                            sc.Stop();
+                        if (!isLocal && sc.Status != ServiceControllerStatus.Running)
+                        {
+                            isServiceRunning = false;
+                            sc.Start();
+                            sc.WaitForStatus(ServiceControllerStatus.Running);
+                        }
                     }
-
                     catch (Exception)
                     {
                     }
+
+                    try
+                    {
+                        int numberOfMatchingApplications = 0;
+                        
+                        using (RegistryKey key = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, targetComputer))
+                        {
+                            using (RegistryKey mainKey64 = key.OpenSubKey(uninstallKey))
+                                numberOfMatchingApplications += EnumerateUninstallKeys(mainKey64, searchPhrase, targetComputer);
+                            using (RegistryKey mainKey32 = key.OpenSubKey(uninstallKey32on64))
+                                numberOfMatchingApplications += EnumerateUninstallKeys(mainKey32, searchPhrase, targetComputer);
+                        }
+                        
+                        if (numberOfMatchingApplications == 0)
+                            bw.ReportProgress(
+                                (int)QueryResult.Type.NoMatch,
+                                new QueryResult { ComputerName = targetComputer, ResultText = "Application not found." });
+                    }
+                    catch (Exception excpt)
+                    {
+                        string errorMessage = excpt.Message;
+                        if (excpt.Message.Contains("("))
+                            errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
+                        bw.ReportProgress(
+                            (int)QueryResult.Type.NoMatch,
+                            new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
+                    }
+
+
+                    // Cleanup.
+                    if (!isLocal && !isServiceRunning)
+                    {
+                        try
+                        {
+                            if (sc != null)
+                                sc.Stop();
+                        }
+
+                        catch (Exception)
+                        {
+                        }
+                    }
                 }
+            }
+
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message;
+                if (ex.Message.Contains("("))
+                    errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
+                bw.ReportProgress(
+                    (int)QueryResult.Type.NoMatch,
+                    new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
+            }
+
+            finally
+            {
+                if (inParams != null)
+                    inParams.Dispose();
+                if (outParams != null)
+                    outParams.Dispose();
             }
         }
 
