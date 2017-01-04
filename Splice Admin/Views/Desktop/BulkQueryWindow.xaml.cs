@@ -40,6 +40,9 @@ namespace Splice_Admin.Views.Desktop
                 case RemoteBulkQuery.QueryType.LoggedOnUser:
                     tbSearchType.Text = "Logged On User";
                     break;
+                case RemoteBulkQuery.QueryType.Registry:
+                    tbSearchType.Text = "Registry Value";
+                    break;
                 case RemoteBulkQuery.QueryType.Process:
                     tbSearchType.Text = "Running Process";
                     break;
@@ -96,6 +99,41 @@ namespace Splice_Admin.Views.Desktop
                             (int)QueryResult.Type.ProgressReport,
                             new QueryResult { ComputerName = targetComputer });
                         SearchForLoggedOnUser(targetComputer, bulkQuery.SearchPhrase);
+                    }
+                    break;
+                case RemoteBulkQuery.QueryType.Registry:
+                    UInt32 selectedRegistryHive = 0;
+                    switch (bulkQuery.SearchPhrase.Substring(0, bulkQuery.SearchPhrase.IndexOf('\\')).ToUpper())
+                    {
+                        case "HKEY_CLASSES_ROOT":
+                        case "HKCR":
+                            selectedRegistryHive = (uint)RemoteRegistry.Hive.HKEY_CLASSES_ROOT;
+                            break;
+                        case "HKEY_LOCAL_MACHINE":
+                        case "HKLM":
+                            selectedRegistryHive = (uint)RemoteRegistry.Hive.HKEY_LOCAL_MACHINE;
+                            break;
+                        case "HKEY_USERS":
+                        case "HKU":
+                            selectedRegistryHive = (uint)RemoteRegistry.Hive.HKEY_USERS;
+                            break;
+                        case "HKEY_CURRENT_CONFIG":
+                        case "HKCC":
+                            selectedRegistryHive = (uint)RemoteRegistry.Hive.HKEY_CURRENT_CONFIG;
+                            break;
+                    }
+
+                    var regKeyName = bulkQuery.SearchPhrase.Substring(bulkQuery.SearchPhrase.IndexOf('\\') + 1);
+                    regKeyName = regKeyName.Substring(0, regKeyName.LastIndexOf('\\'));
+                    var regValueName = bulkQuery.SearchPhrase.Substring(bulkQuery.SearchPhrase.LastIndexOf('\\') + 1);
+
+
+                    foreach (var targetComputer in bulkQuery.TargetComputerList)
+                    {
+                        bw.ReportProgress(
+                            (int)QueryResult.Type.ProgressReport,
+                            new QueryResult { ComputerName = targetComputer });
+                        SearchForRegistryValue(targetComputer, selectedRegistryHive, regKeyName, regValueName);
                     }
                     break;
                 case RemoteBulkQuery.QueryType.Process:
@@ -288,7 +326,7 @@ namespace Splice_Admin.Views.Desktop
                         outParams = wmiRegistry.InvokeMethod("GetStringValue", inParams, null);
                         if (outParams["sValue"] != null && (((string)outParams["sValue"]).Contains("Update") || ((string)outParams["sValue"]).Equals("Hotfix")))
                             continue;
-                        
+
                         // Get DisplayName (String) value.
                         inParams["sSubKeyName"] = subKey;
                         inParams["sValueName"] = "DisplayName";
@@ -351,7 +389,7 @@ namespace Splice_Admin.Views.Desktop
                     try
                     {
                         int numberOfMatchingApplications = 0;
-                        
+
                         using (RegistryKey key = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, targetComputer))
                         {
                             using (RegistryKey mainKey64 = key.OpenSubKey(uninstallKey))
@@ -359,7 +397,7 @@ namespace Splice_Admin.Views.Desktop
                             using (RegistryKey mainKey32 = key.OpenSubKey(uninstallKey32on64))
                                 numberOfMatchingApplications += EnumerateUninstallKeys(mainKey32, searchPhrase, targetComputer);
                         }
-                        
+
                         if (numberOfMatchingApplications == 0)
                             bw.ReportProgress(
                                 (int)QueryResult.Type.NoMatch,
@@ -511,6 +549,157 @@ namespace Splice_Admin.Views.Desktop
         }
 
 
+        private void SearchForRegistryValue(string targetComputer, UInt32 registryHive, string registryKeyName, string registryValueName)
+        {
+            var managementScope = new ManagementScope($@"\\{targetComputer}\root\CIMV2");
+            ManagementBaseObject inParams = null;
+            ManagementBaseObject outParams = null;
+            
+            try
+            {
+                using (var wmiRegistry = new ManagementClass(managementScope, new ManagementPath("StdRegProv"), null))
+                {
+                    // A registry search can either retrieve the data for a specific value, or it can enumerate the values for a given key.
+                    // At this point, we are unsure if the user supplied a path to a value or a key.
+                    // We are first assuming a key was provided and will attempt to enumerate values.
+                    inParams = wmiRegistry.GetMethodParameters("EnumValues");
+                    inParams["hDefKey"] = registryHive;
+                    inParams["sSubKeyName"] = $@"{registryKeyName}\{registryValueName}";
+                    outParams = wmiRegistry.InvokeMethod("EnumValues", inParams, null);
+                    if (outParams["sNames"] != null && outParams["Types"] != null)
+                    {
+                        // Enumerate values.
+                        var names = outParams["sNames"] as string[];
+                        var types = outParams["Types"] as int[];
+                        for (int i = 0; i < names.Length; ++i)
+                        {
+                            switch (types[i])
+                            {
+                                case (int)RemoteRegistry.ValueType.REG_DWORD:
+                                    inParams = wmiRegistry.GetMethodParameters("GetDWORDValue");
+                                    inParams["hDefKey"] = registryHive;
+                                    inParams["sSubKeyName"] = $@"{registryKeyName}\{registryValueName}";
+                                    inParams["sValueName"] = names[i];
+                                    outParams = wmiRegistry.InvokeMethod("GetDWORDValue", inParams, null);
+                                    if (outParams["uValue"] != null)
+                                        bw.ReportProgress(
+                                            (int)QueryResult.Type.Match,
+                                            new QueryResult { ComputerName = targetComputer, ResultText = $"{names[i]} ({(UInt32)outParams["uValue"]})" });
+                                    break;
+                                case (int)RemoteRegistry.ValueType.REG_EXPAND_SZ:
+                                case (int)RemoteRegistry.ValueType.REG_SZ:
+                                    inParams = wmiRegistry.GetMethodParameters("GetStringValue");
+                                    inParams["hDefKey"] = registryHive;
+                                    inParams["sSubKeyName"] = $@"{registryKeyName}\{registryValueName}";
+                                    inParams["sValueName"] = names[i];
+                                    outParams = wmiRegistry.InvokeMethod("GetStringValue", inParams, null);
+                                    if (outParams["sValue"] != null)
+                                        bw.ReportProgress(
+                                            (int)QueryResult.Type.Match,
+                                            new QueryResult { ComputerName = targetComputer, ResultText = $"{names[i]} ({(string)outParams["sValue"]})" });
+                                    break;
+                                default:
+                                    bw.ReportProgress(
+                                            (int)QueryResult.Type.Match,
+                                            new QueryResult { ComputerName = targetComputer, ResultText = $"{names[i]} [UNSUPPORTED TYPE: {((RemoteRegistry.ValueType)types[i]).ToString()}]" });
+                                    break;
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Key enumeration failed or returned no results.
+                        // We will now attempt to see if the provided search phrase was for a specific registry value.
+                        int valueType = 0;
+                        inParams = wmiRegistry.GetMethodParameters("EnumValues");
+                        inParams["hDefKey"] = registryHive;
+                        inParams["sSubKeyName"] = registryKeyName;
+                        outParams = wmiRegistry.InvokeMethod("EnumValues", inParams, null);
+                        if (outParams["sNames"] != null && outParams["Types"] != null)
+                        {
+                            var valueNames = outParams["sNames"] as string[];
+                            for (int i = 0; i < valueNames.Length; ++i)
+                            {
+                                if (valueNames[i].ToUpper().Equals(registryValueName.ToUpper()))
+                                {
+                                    var valueTypes = outParams["Types"] as int[];
+                                    valueType = valueTypes[i];
+                                    break;
+                                }
+                            }
+
+                            if (valueType != 0)
+                            {
+                                switch (valueType)
+                                {
+                                    case (int)RemoteRegistry.ValueType.REG_DWORD:
+                                        inParams = wmiRegistry.GetMethodParameters("GetDWORDValue");
+                                        inParams["hDefKey"] = registryHive;
+                                        inParams["sSubKeyName"] = registryKeyName;
+                                        inParams["sValueName"] = registryValueName;
+                                        outParams = wmiRegistry.InvokeMethod("GetDWORDValue", inParams, null);
+                                        if (outParams["uValue"] != null)
+                                            bw.ReportProgress(
+                                                (int)QueryResult.Type.Match,
+                                                new QueryResult { ComputerName = targetComputer, ResultText = ((UInt32)outParams["uValue"]).ToString() });
+                                        else
+                                            bw.ReportProgress(
+                                                (int)QueryResult.Type.NoMatch,
+                                                new QueryResult { ComputerName = targetComputer, ResultText = "Error reading REG_DWORD value." });
+                                        break;
+                                    case (int)RemoteRegistry.ValueType.REG_EXPAND_SZ:
+                                    case (int)RemoteRegistry.ValueType.REG_SZ:
+                                        inParams = wmiRegistry.GetMethodParameters("GetStringValue");
+                                        inParams["hDefKey"] = registryHive;
+                                        inParams["sSubKeyName"] = registryKeyName;
+                                        inParams["sValueName"] = registryValueName;
+                                        outParams = wmiRegistry.InvokeMethod("GetStringValue", inParams, null);
+                                        if (outParams["sValue"] != null)
+                                            bw.ReportProgress(
+                                                (int)QueryResult.Type.Match,
+                                                new QueryResult { ComputerName = targetComputer, ResultText = (string)outParams["sValue"] });
+                                        else
+                                            bw.ReportProgress(
+                                                (int)QueryResult.Type.NoMatch,
+                                                new QueryResult { ComputerName = targetComputer, ResultText = "Error reading REG_SZ value." });
+                                        break;
+                                }
+                            }
+                            else
+                                bw.ReportProgress(
+                                    (int)QueryResult.Type.NoMatch,
+                                    new QueryResult { ComputerName = targetComputer, ResultText = "Registry value not found." });
+                        }
+                        else
+                            bw.ReportProgress(
+                                (int)QueryResult.Type.NoMatch,
+                                new QueryResult { ComputerName = targetComputer, ResultText = "Registry key not found." });
+                    }
+                }
+            }
+
+            catch (ManagementException ex) when (ex.ErrorCode == ManagementStatus.NotFound)
+            {
+                bw.ReportProgress(
+                    (int)QueryResult.Type.NoMatch,
+                    new QueryResult { ComputerName = targetComputer, ResultText = "Target operating system not supported." });
+            }
+
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message;
+                if (ex.Message.Contains("("))
+                    errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
+                bw.ReportProgress(
+                    (int)QueryResult.Type.NoMatch,
+                    new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
+            }
+        }
+
+
+
         private void SearchForProcess(string targetComputer, string searchPhrase)
         {
             // Setup WMI Query.
@@ -518,7 +707,7 @@ namespace Splice_Admin.Views.Desktop
             var scope = new ManagementScope($@"\\{targetComputer}\root\CIMV2", options);
             var query = new ObjectQuery($"SELECT * FROM Win32_Process WHERE Name LIKE '%{searchPhrase}%'");
             var searcher = new ManagementObjectSearcher(scope, query);
-            
+
             try
             {
                 if (searcher.Get().Count > 0)

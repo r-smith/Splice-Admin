@@ -69,6 +69,24 @@
                                     <TextBlock Text="Username must match exactly.  No wildcards.  Do not include a domain portion.  Example:  'datauser05'"
                                                Margin="15,5,0,0"
                                                TextWrapping="Wrap"/>
+                                    <TextBlock Text="Registry Value"
+                                               Margin="0,20,0,0"
+                                               TextDecorations="Underline" />
+                                    <TextBlock Text="Retrieves the data for a given registry value or retrieves all the values for a given key."
+                                               FontSize="12"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="Enter the path to a registry key or value in the format of HIVE\KEY\SUBKEY\VALUENAME.  HIVE can either be the full hive name such as HKEY_LOCAL_MACHINE, or the shorthand equivalent, HKLM.  Valid hives are HKCR, HKU, HKLM, and HKCC.  You cannot search HKEY_CURRENT_USER.  Search can only retrieve REG_SZ and REG_DWORD values.  Only Vista/Server 2008 or greater targets are supported at this time.  The search phrase is not case sensitive.  If your search phrase points to a key, the search will retrieve all the values for the given key.  Example:  'hklm\software\microsoft\windows\currentversion\run' might return several different string values.  If your search phrase points to a specific value, the search will retrieve the data for that single value."
+                                               Margin="15,5,0,0"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="Running Process"
+                                               Margin="0,20,0,0"
+                                               TextDecorations="Underline" />
+                                    <TextBlock Text="Check if a process is running and get the process name, process id, and owner."
+                                               FontSize="12"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Text="This is a wildcard search that matches partial strings.  Example:  'note' would match on 'notepad.exe' and 'onenote.exe'"
+                                               Margin="15,5,0,0"
+                                               TextWrapping="Wrap"/>
                                     <TextBlock Text="Windows Service"
                                                Margin="0,20,0,0"
                                                TextDecorations="Underline" />
@@ -118,6 +136,7 @@
                             <ListBoxItem Content="File or directory (absolute path)"/>
                             <ListBoxItem Content="Installed application"/>
                             <ListBoxItem Content="Logged on user"/>
+                            <ListBoxItem Content="Registry value"/>
                             <ListBoxItem Content="Running process"/>
                             <ListBoxItem Content="Windows service"/>
                         </ComboBox>

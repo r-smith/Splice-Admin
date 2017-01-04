@@ -34,6 +34,38 @@ namespace Splice_Admin.Views.Desktop
                 txtTargetComputer.Focus();
                 return;
             }
+            else if (cboQueryType.Text.Equals("Registry value"))
+            {
+                //txtSearchPhrase.Text = txtSearchPhrase.Text.TrimEnd('\\');
+                if (txtSearchPhrase.Text.Count(x => x == '\\') < 2)
+                {
+                    MessageBox.Show("Invalid registry path.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    txtSearchPhrase.Focus();
+                    return;
+                }
+                switch (txtSearchPhrase.Text.Substring(0, txtSearchPhrase.Text.IndexOf('\\')).ToUpper())
+                {
+                    case "HKEY_CLASSES_ROOT":
+                    case "HKEY_LOCAL_MACHINE":
+                    case "HKEY_USERS":
+                    case "HKEY_CURRENT_CONFIG":
+                    case "HKCR":
+                    case "HKLM":
+                    case "HKU":
+                    case "HKCC":
+                        break;
+                    case "HKEY_CURRENT_USER":
+                    case "HKCU":
+                        MessageBox.Show("You cannot remotely search the HKEY_CURRENT_USER hive.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        txtSearchPhrase.Focus();
+                        return;
+                    default:
+                        MessageBox.Show("Invalid registry path.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        txtSearchPhrase.Focus();
+                        return;
+                }
+            }
+
             var bulkQuery = new RemoteBulkQuery();
             bulkQuery.TargetComputerList = new List<string>();
             if (rdoManual.IsChecked == true)
@@ -67,9 +99,12 @@ namespace Splice_Admin.Views.Desktop
                     bulkQuery.SearchType = RemoteBulkQuery.QueryType.LoggedOnUser;
                     break;
                 case 3:
-                    bulkQuery.SearchType = RemoteBulkQuery.QueryType.Process;
+                    bulkQuery.SearchType = RemoteBulkQuery.QueryType.Registry;
                     break;
                 case 4:
+                    bulkQuery.SearchType = RemoteBulkQuery.QueryType.Process;
+                    break;
+                case 5:
                     bulkQuery.SearchType = RemoteBulkQuery.QueryType.Service;
                     break;
                 default:
