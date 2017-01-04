@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -22,6 +23,21 @@ namespace Splice_Admin.Views.Desktop
         {
             var wnd = new ChangeLogWindow();
             wnd.Show();
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            }
+            catch
+            {
+            }
+            finally
+            {
+                e.Handled = true;
+            }
         }
     }
 }

@@ -25,23 +25,36 @@
                         <DropShadowEffect ShadowDepth="3" Direction="330" Color="Black" Opacity="0.2" BlurRadius="5" />
                     </TextBlock.Effect>
                 </TextBlock>
-                
+
             </StackPanel>
             <TextBlock Grid.Row="1" Grid.ColumnSpan="2" FontSize="15" Foreground="#777" HorizontalAlignment="Center" Text="[A remote Windows administration tool]" />
         </Grid>
 
-        <StackPanel Orientation="Horizontal"
-                    VerticalAlignment="Bottom" HorizontalAlignment="Center"
-                    Margin="0,0,0,10">
-            <TextBlock Name="tbVersion"
+        <Grid VerticalAlignment="Bottom">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock HorizontalAlignment="Center">
+                <Hyperlink NavigateUri="https://www.github.com/R-Smith/Splice-Admin" RequestNavigate="Hyperlink_RequestNavigate">
+                    https://www.github.com/R-Smith/Splice-Admin
+                </Hyperlink>
+            </TextBlock>
+            <StackPanel Grid.Row="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="0,10,0,10">
+                <TextBlock Name="tbVersion"
                        Text="Build: XXXX.XXXX"
                        FontSize="14" Foreground="#BBD" />
-            <TextBlock Name="tbChangeLog"
+                <TextBlock Name="tbChangeLog"
                        Text="Change Log"
                        FontSize="14" Foreground="#CAA"
                        Margin="20,0,0,0"
                        Cursor="Hand"
                        MouseDown="tbChangeLog_MouseDown" />
-        </StackPanel>
+            </StackPanel>
+        </Grid>
+        
     </Grid>
 </UserControl>
