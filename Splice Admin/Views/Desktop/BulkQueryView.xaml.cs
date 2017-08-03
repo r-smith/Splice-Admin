@@ -129,6 +129,7 @@ namespace Splice_Admin.Views.Desktop
                     var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30).ToString("yyyyMMddHHmmss.f'Z'");
                     ldapFilter += $"(whenChanged>={thirtyDaysAgo})";
                 }
+                ldapFilter += ")";
 
                 switch (searchType)
                 {

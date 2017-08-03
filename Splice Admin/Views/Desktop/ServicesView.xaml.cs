@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace Splice_Admin.Views.Desktop
 {
@@ -12,6 +13,8 @@ namespace Splice_Admin.Views.Desktop
     /// </summary>
     public partial class ServicesView : UserControl
     {
+        ICollectionView _ServicesCollection;
+
         public ServicesView(string targetComputer)
         {
             InitializeComponent();
@@ -51,6 +54,8 @@ namespace Splice_Admin.Views.Desktop
             {
                 // Success.  Display the results.
                 dgServices.ItemsSource = e.Result as List<RemoteService>;
+                _ServicesCollection = CollectionViewSource.GetDefaultView(e.Result as List<RemoteService>);
+                _ServicesCollection.Filter = ServiceFilter;
                 RemoteAdmin.SortDataGrid(dgServices);
             }
             else
@@ -148,6 +153,32 @@ namespace Splice_Admin.Views.Desktop
             var mainWindow = Window.GetWindow(this);
             mainWindow.IsEnabled = false;
             bgWorker.RunWorkerAsync(service);
+        }
+
+
+        private void txtFilter_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            _ServicesCollection.Refresh();
+        }
+
+        private bool ServiceFilter(object item)
+        {
+            var service = item as RemoteService;
+            var filterText = txtFilter.Text.ToUpper();
+            if (!string.IsNullOrEmpty(service.DisplayName) && service.DisplayName.ToUpper().Contains(filterText))
+                return true;
+            else if (!string.IsNullOrEmpty(service.StartupType) && service.StartupType.ToUpper().Contains(filterText))
+                return true;
+            else if (!string.IsNullOrEmpty(service.LogOnAs) && service.LogOnAs.ToUpper().Contains(filterText))
+                return true;
+            else
+                return false;
+        }
+
+        private void filterClear_Click(object sender, RoutedEventArgs e)
+        {
+            txtFilter.Clear();
+            _ServicesCollection.Refresh();
         }
     }
 }

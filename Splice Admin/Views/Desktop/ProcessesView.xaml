@@ -5,9 +5,68 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:Splice_Admin.Controls"
              xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
+             Background="White"
              d:DesignHeight="250" d:DesignWidth="350">
+
+    <UserControl.Resources>
+        <ControlTemplate x:Key="TextBoxTemplate" TargetType="{x:Type TextBox}">
+            <Grid>
+                <Border x:Name="border"
+                        BorderBrush="#4285F4"
+                        BorderThickness="1"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="4"
+                        Padding="4,2"
+                        SnapsToDevicePixels="True">
+                    <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                </Border>
+                <TextBlock Text="Filter..."
+                           Visibility="Hidden"
+                           FontSize="13"
+                           FontStyle="Italic"
+                           Opacity="0.5"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Padding="10,0,0,0"
+                           IsHitTestVisible="False"
+                           x:Name="UserMessage"/>
+                <Button HorizontalAlignment="Right" Margin="0,0,7,0" Click="filterClear_Click">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Border Background="Transparent" VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="{x:Type Border}">
+                                        <Setter Property="Opacity" Value="0.4" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="0.9" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Image Source="/Resources/cancel-24.png" Width="13" Height="13"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                </Trigger>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="Visibility" TargetName="UserMessage" Value="Visible"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+    </UserControl.Resources>
+
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <DataGrid Grid.Row="0"
                   Name="dgProcesses"
                   Margin="0"
@@ -194,8 +253,19 @@
             </DataGrid.Columns>
         </DataGrid>
 
+        <Grid Grid.Row="1" Background="#F9F9F9">
+            <TextBox Name="txtFilter"
+                     HorizontalAlignment="Left"
+                     Width="225"
+                     Margin="15,3,0,2"
+                     Padding="0,0,20,0"
+                     FontSize="12"
+                     KeyUp="txtFilter_KeyUp"
+                     Template="{StaticResource TextBoxTemplate}" />
+        </Grid>
+
         <!-- Loading Overlay -->
-        <Grid Name="gridLoading" Background="#FAFAFA" Visibility="Collapsed">
+        <Grid Name="gridLoading" Background="#FAFAFA" Visibility="Collapsed" Grid.RowSpan="2">
             <controls:CircularProgressBar Style="{DynamicResource ProgressBarFadeInAnimation}"
                                           Visibility="{Binding ElementName=gridLoading,Path=Visibility}"
                                           HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -203,7 +273,7 @@
         </Grid>
 
         <!-- Error Overlay -->
-        <Grid Name="gridError" Background="White" Visibility="Collapsed">
+        <Grid Name="gridError" Background="White" Visibility="Collapsed" Grid.RowSpan="2">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Image Source="/Resources/error-64.png" Width="64" Height="64" Margin="0,0,30,0" />
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -217,7 +287,7 @@
         </Grid>
 
         <!-- Additional Loading Overlay -->
-        <Grid Name="gridOverlay" Grid.RowSpan="3" Visibility="Collapsed">
+        <Grid Name="gridOverlay" Grid.RowSpan="2" Visibility="Collapsed">
             <Border HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="White"

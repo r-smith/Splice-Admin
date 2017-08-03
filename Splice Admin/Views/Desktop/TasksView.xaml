@@ -90,27 +90,27 @@
                                     Content="Windows Remote Assistance">
                     </Button>
 
-                    <!-- Event Log Viewer Button -->
-                    <Button Template="{StaticResource ResourceKey=TaskButtonTemplate}"
-                                    Click="btnEventLogViewer"
-                                    HorizontalAlignment="Left"
-                                    IsTabStop="False"
-                                    FocusVisualStyle="{x:Null}"
-                                    Margin="0,25,0,0"
-                                    Foreground="#586e75"
-                                    Content="Event Log Viewer">
-                    </Button>
-
                     <!-- Registry Editor Button -->
                     <Button Template="{StaticResource ResourceKey=TaskButtonTemplate}"
                                     Click="btnWindowsRegistry_Click"
                                     HorizontalAlignment="Left"
                                     IsTabStop="False"
                                     FocusVisualStyle="{x:Null}"
+                                    Margin="0,25,0,0"
                                     Foreground="#586e75"
                                     Content="Registry Editor">
                     </Button>
 
+                    <!-- Event Log Viewer Button -->
+                    <Button Template="{StaticResource ResourceKey=TaskButtonTemplate}"
+                                    Click="btnEventLogViewer"
+                                    HorizontalAlignment="Left"
+                                    IsTabStop="False"
+                                    FocusVisualStyle="{x:Null}"
+                                    Foreground="#586e75"
+                                    Content="Event Log Viewer (MMC)">
+                    </Button>
+                    
                     <!-- Computer Management Button -->
                     <Button Template="{StaticResource ResourceKey=TaskButtonTemplate}"
                                     Click="btnComputerManagement_Click"
@@ -118,7 +118,7 @@
                                     IsTabStop="False"
                                     FocusVisualStyle="{x:Null}"
                                     Foreground="#586e75"
-                                    Content="Computer Management">
+                                    Content="Computer Management (MMC)">
                     </Button>
 
                     <!-- Services Console Button -->
@@ -128,7 +128,7 @@
                                     IsTabStop="False"
                                     FocusVisualStyle="{x:Null}"
                                     Foreground="#586e75"
-                                    Content="Services Console">
+                                    Content="Services (MMC)">
                     </Button>
                 </StackPanel>
 

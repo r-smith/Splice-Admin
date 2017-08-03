@@ -41,6 +41,16 @@
     <Grid>
         <ScrollViewer Padding="10">
             <StackPanel>
+                <TextBlock Style="{StaticResource HeaderText}" Text="2017.0802" />
+                <ContentControl Template="{StaticResource BulletTemplate}">
+                    <TextBlock Style="{StaticResource MainText}"
+                               Text="The Processes, Services, and Applications views now include a filter feature.  Type in a search phrase and the results are automatically filtered as you type." />
+                </ContentControl>
+                <ContentControl Template="{StaticResource BulletTemplate}">
+                    <TextBlock Style="{StaticResource MainText}"
+                               Text="Bug fix: In the Bulk Query view, targeting 'All domain computers' no longer causes a crash." />
+                </ContentControl>
+                
                 <TextBlock Style="{StaticResource HeaderText}" Text="2017.0104" />
                 <ContentControl Template="{StaticResource BulletTemplate}">
                     <TextBlock Style="{StaticResource MainText}"
