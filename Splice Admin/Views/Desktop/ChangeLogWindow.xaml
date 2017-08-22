@@ -41,6 +41,12 @@
     <Grid>
         <ScrollViewer Padding="10">
             <StackPanel>
+                <TextBlock Style="{StaticResource HeaderText}" Text="2017.0821" />
+                <ContentControl Template="{StaticResource BulletTemplate}">
+                    <TextBlock Style="{StaticResource MainText}"
+                               Text="Bug fix: Corrected LDAP queries used in the Bulk Query view when selecting the pre-defined target groups." />
+                </ContentControl>
+                
                 <TextBlock Style="{StaticResource HeaderText}" Text="2017.0802" />
                 <ContentControl Template="{StaticResource BulletTemplate}">
                     <TextBlock Style="{StaticResource MainText}"

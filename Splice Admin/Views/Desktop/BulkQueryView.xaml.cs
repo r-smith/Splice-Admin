@@ -129,12 +129,11 @@ namespace Splice_Admin.Views.Desktop
                     var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30).ToString("yyyyMMddHHmmss.f'Z'");
                     ldapFilter += $"(whenChanged>={thirtyDaysAgo})";
                 }
-                ldapFilter += ")";
 
                 switch (searchType)
                 {
                     case DomainComputer.All:
-                        directorySearcher.Filter = ldapFilter;
+                        directorySearcher.Filter = ldapFilter + ")";
                         break;
                     case DomainComputer.Server:
                         ldapFilter += "(|(operatingSystem=Windows Server*)(operatingSystem=Windows 2000 Server)))";
