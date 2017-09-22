@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Management;
 using System.ServiceProcess;
@@ -183,45 +184,105 @@ namespace Splice_Admin.Views.Desktop
 
         private void SearchForFile(string targetComputer, string searchPhrase)
         {
-            searchPhrase = searchPhrase.TrimEnd('\\');
-
             // Setup WMI query.
             var options = new ConnectionOptions();
             var scope = new ManagementScope($@"\\{targetComputer}\root\CIMV2", options);
-            var query = new ObjectQuery($@"SELECT * FROM CIM_DataFile WHERE Name = '{searchPhrase.Replace(@"\", @"\\")}'");
-            var searcher = new ManagementObjectSearcher(scope, query);
 
-            try
+            // Determine whether or not this is a wildcard search.
+            if (!string.IsNullOrEmpty(Path.GetFileName(searchPhrase)) && searchPhrase.Contains('*'))
             {
-                if (searcher.Get().Count > 0)
-                    bw.ReportProgress(
-                        (int)QueryResult.Type.Match,
-                        new QueryResult { ComputerName = targetComputer, ResultText = "File found." });
-                else
+                string queryString;
+
+                try
                 {
-                    query = new ObjectQuery($@"SELECT * FROM Win32_Directory WHERE Name = '{searchPhrase.Replace(@"\", @"\\")}'");
-                    searcher = new ManagementObjectSearcher(scope, query);
+                    var pathRoot = Path.GetPathRoot(searchPhrase).TrimEnd('\\');
+                    var path = Path.GetDirectoryName(searchPhrase);
+                    path = path.Substring(pathRoot.Length);
+
+                    if (Path.HasExtension(searchPhrase))
+                    {
+                        var fileName = Path.GetFileNameWithoutExtension(searchPhrase).Replace('*', '%');
+                        var extension = Path.GetExtension(searchPhrase).Replace('*', '%').TrimStart('.');
+                        queryString = $"SELECT * FROM CIM_DataFile WHERE Drive = '{pathRoot}' AND Path = '{path.Replace(@"\", @"\\")}\\\\' AND FileName LIKE '{fileName}' AND Extension LIKE '{extension}'";
+                    }
+                    else
+                    {
+                        var fileName = Path.GetFileName(searchPhrase).Replace('*', '%');
+                        queryString = $"SELECT * FROM CIM_DataFile WHERE Drive = '{pathRoot}' AND Path = '{path.Replace(@"\", @"\\")}\\\\' AND FileName LIKE '{fileName}'";
+                    }
+
+                    var query = new ObjectQuery(queryString);
+                    var searcher = new ManagementObjectSearcher(scope, query);
+
+                    if (searcher.Get().Count > 0)
+                    {
+                        foreach (ManagementObject obj in searcher.Get())
+                        {
+
+                            bw.ReportProgress(
+                               (int)QueryResult.Type.Match,
+                                new QueryResult { ComputerName = targetComputer, ResultText = (string)obj["Name"] });
+                        }
+                    }
+                    else
+                    {
+                        bw.ReportProgress(
+                            (int)QueryResult.Type.NoMatch,
+                            new QueryResult { ComputerName = targetComputer, ResultText = "File not found." });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage = ex.Message;
+                    if (ex.Message.Contains("("))
+                        errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
+                    bw.ReportProgress(
+                        (int)QueryResult.Type.NoMatch,
+                        new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
+                }
+
+            }
+            else
+            {
+                try
+                {
+                    var query = new ObjectQuery($@"SELECT * FROM CIM_DataFile WHERE Name = '{searchPhrase.Replace(@"\", @"\\")}'");
+                    var searcher = new ManagementObjectSearcher(scope, query);
 
                     if (searcher.Get().Count > 0)
                         bw.ReportProgress(
                             (int)QueryResult.Type.Match,
-                            new QueryResult { ComputerName = targetComputer, ResultText = "Directory found." });
+                            new QueryResult { ComputerName = targetComputer, ResultText = "File found." });
                     else
-                        bw.ReportProgress(
-                            (int)QueryResult.Type.NoMatch,
-                            new QueryResult { ComputerName = targetComputer, ResultText = "File not found." });
+                    {
+                        query = new ObjectQuery($@"SELECT * FROM Win32_Directory WHERE Name = '{searchPhrase.Replace(@"\", @"\\")}'");
+                        searcher = new ManagementObjectSearcher(scope, query);
+
+                        if (searcher.Get().Count > 0)
+                            bw.ReportProgress(
+                                (int)QueryResult.Type.Match,
+                                new QueryResult { ComputerName = targetComputer, ResultText = "Directory found." });
+                        else
+                            bw.ReportProgress(
+                                (int)QueryResult.Type.NoMatch,
+                                new QueryResult { ComputerName = targetComputer, ResultText = "File not found." });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage = ex.Message;
+                    if (ex.Message.Contains("("))
+                        errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
+
+                    bw.ReportProgress(
+                        (int)QueryResult.Type.NoMatch,
+                        new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
                 }
             }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message;
-                if (ex.Message.Contains("("))
-                    errorMessage = errorMessage.Substring(0, errorMessage.IndexOf('('));
 
-                bw.ReportProgress(
-                    (int)QueryResult.Type.NoMatch,
-                    new QueryResult { ComputerName = targetComputer, ResultText = errorMessage.Trim() });
-            }
+
+
         }
 
         private void SearchForWindowsService(string targetComputer, string searchPhrase)
@@ -554,7 +615,7 @@ namespace Splice_Admin.Views.Desktop
             var managementScope = new ManagementScope($@"\\{targetComputer}\root\CIMV2");
             ManagementBaseObject inParams = null;
             ManagementBaseObject outParams = null;
-            
+
             try
             {
                 using (var wmiRegistry = new ManagementClass(managementScope, new ManagementPath("StdRegProv"), null))

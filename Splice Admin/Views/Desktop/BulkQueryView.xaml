@@ -45,12 +45,15 @@
                                     <TextBlock Text="File or Directory"
                                                Margin="0,15,0,0"
                                                TextDecorations="Underline" />
-                                    <TextBlock Text="Check for the existance of a specific file or folder."
+                                    <TextBlock Text="Check for the existance of a file or folder.  Wildcards are accepted."
                                                FontSize="12"
                                                TextWrapping="Wrap"/>
-                                    <TextBlock Text="The full path must exactly match.  No wildcards.  Spaces are ok.  No quotes.  Example:  'c:\program files (x86)\tcptrigger\tcptrigger.exe'"
-                                               Margin="15,5,0,0"
-                                               TextWrapping="Wrap"/>
+                                    <TextBlock Margin="15,5,0,0"
+                                               TextWrapping="Wrap">
+                                        Specify a full path name, including drive letter.  Wildcards ('*') are ok.  Spaces are ok.  Do not enclose the path in quotes. <LineBreak />
+                                        Example 1:  'c:\program files (x86)\tcptrigger\tcptrigger.exe' <LineBreak />
+                                        Example 2: 'c:\windows\*.txt' would find all files in 'c:\windows' that end with 'txt'."
+                                    </TextBlock>
                                     <TextBlock Text="Installed Application"
                                                Margin="0,20,0,0"
                                                TextDecorations="Underline" />
@@ -133,7 +136,7 @@
                                   Name="cboQueryType"
                                   HorizontalAlignment="Left"
                                   VerticalAlignment="Center">
-                            <ListBoxItem Content="File or directory (absolute path)"/>
+                            <ListBoxItem Content="File or directory"/>
                             <ListBoxItem Content="Installed application"/>
                             <ListBoxItem Content="Logged on user"/>
                             <ListBoxItem Content="Registry value"/>
