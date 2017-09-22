@@ -3,8 +3,8 @@ Splice Admin
 Splice Admin is a remote Windows administration tool.  It allows you to retrieve information and interact with remote machines on your network.
 
 
-###### (Latest version is v2017.0802, released on August 2, 2017)
-### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/download/v2017.0802/SpliceAdm.exe)
+###### (Latest version is v2017.0821, released on August 22, 2017)
+### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/download/v2017.0821/SpliceAdm.exe)
 ### [Click here to download the source](https://github.com/R-Smith/Splice-Admin/archive/master.zip)
 
 ##### Notes
@@ -15,6 +15,10 @@ Splice Admin is a remote Windows administration tool.  It allows you to retrieve
 
 [![Beerpay](https://beerpay.io/R-Smith/Splice-Admin/badge.svg?style=flat)](https://beerpay.io/R-Smith/Splice-Admin)[![Join the chat at https://gitter.im/Splice-Admin/Lobby](https://badges.gitter.im/Splice-Admin/Lobby.svg)](https://gitter.im/Splice-Admin/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+
+### Changes for v2017.0821
+* Bug fix: Corrected LDAP queries used in the Bulk Query view.
+* **New features coming soon!**  Including a remote *netstat* feature for displaying all active TCP connections on the remote computer as well as processes and port numbers on which the target computer is listening.
 
 ### Changes for v2017.0802
 * The Processes, Services, and Applications views now include a filter feature.  Type in a search phrase and the results are automatically filtered as you type.
