@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
+using System.IO;
 using System.Management;
-using System.Text;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading;
 
 namespace Splice_Admin.Classes
@@ -137,8 +138,7 @@ namespace Splice_Admin.Classes
             // It returns a DialogResult which will be used to display the results.
             var dialog = new DialogResult();
             bool didTaskSucceed = false;
-            const string commandLineA = "cmd /c echo n | gpupdate /target:user /force";
-            const string commandLineB = "cmd /c echo n | gpupdate /target:computer /force";
+            const string gpupdateComputer = "cmd /c echo n | gpupdate /force";
 
             // Setup WMI query.
             var options = new ConnectionOptions();
@@ -158,26 +158,77 @@ namespace Splice_Admin.Classes
                 var managementClass = new ManagementClass(scope, managementPath, objectGetOptions);
 
                 ManagementBaseObject inParams = managementClass.GetMethodParameters("Create");
-                inParams["CommandLine"] = commandLineA;
+                inParams["CommandLine"] = gpupdateComputer;
                 ManagementBaseObject outParams = managementClass.InvokeMethod("Create", inParams, null);
 
                 int returnValue;
                 bool isReturnValid = int.TryParse(outParams["ReturnValue"].ToString(), out returnValue);
                 if (!isReturnValid || returnValue != 0)
                     throw new Exception();
+            }
+            catch
+            { }
 
-                Thread.Sleep(5000);
+            try
+            {
+                // To apply user policies, gpupdate.exe MUST be run in the context of each logged in user.
+                // In order to do so, a scheduled task is created on the target machine that is configured to run GPUpdate
+                // as each currently logged in user.  Prior to running the task, a simple .VBS script that calls gpupdate.exe is
+                // written to C:\Windows\TEMP on the target computer.  The scheduled task points to the .VBS script.  This is done
+                // to hide any console windows that would appear if the task were to directly run gpupdate.exe.  The temporary
+                // script file and task are then deleted once the execution has kicked off.
+                const string gpupdateUser = "CreateObject(\"WScript.Shell\").Run \"cmd /c echo n | gpupdate /target:user /force\", 0";
+                string remotePathToGpupdateScript = $@"\\{targetComputer}\C$\Windows\Temp";
+                string localPathToGpupdateScript = @"C:\Windows\Temp";
 
-                inParams["CommandLine"] = commandLineB;
-                outParams = managementClass.InvokeMethod("Create", inParams, null);
+                RemoteLogonSession.ComputerName = targetComputer;
+                var loggedOnUsers = RemoteLogonSession.GetLogonSessions();
 
-                isReturnValid = int.TryParse(outParams["ReturnValue"].ToString(), out returnValue);
-                if (!isReturnValid || returnValue != 0)
-                    throw new Exception();
+                if (loggedOnUsers.Count > 0 && Directory.Exists(remotePathToGpupdateScript))
+                {
+                    var rnd = new Random();
+                    var rndNumber = rnd.Next(0, 1000);
+                    remotePathToGpupdateScript += $@"\splc-{rndNumber}.vbs";
+                    localPathToGpupdateScript += $@"\splc-{rndNumber}.vbs";
+                    var scheduledTaskName = "SpliceAdmin-Gpupdate-" + rndNumber;
 
-                Thread.Sleep(7000);
+                    // Write temporary .vbs script file.
+                    File.WriteAllText(remotePathToGpupdateScript, gpupdateUser);
 
-                didTaskSucceed = true;
+                    if (File.Exists(remotePathToGpupdateScript))
+                    {
+                        var fileInfo = new FileInfo(remotePathToGpupdateScript);
+                        var fileSecurity = fileInfo.GetAccessControl();
+                        fileSecurity.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), FileSystemRights.ReadAndExecute, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow));
+                        fileInfo.SetAccessControl(fileSecurity);
+
+                        var startInfo = new ProcessStartInfo();
+                        startInfo.RedirectStandardOutput = true;
+                        startInfo.RedirectStandardError = true;
+                        startInfo.UseShellExecute = false;
+                        startInfo.CreateNoWindow = true;
+                        startInfo.FileName = "schtasks.exe";
+
+                        foreach (var user in loggedOnUsers)
+                        {
+                            startInfo.Arguments = $"/create /f /s {targetComputer} /ru {user.Username} /sc once /st 00:00 /tn {scheduledTaskName} /tr \"wscript.exe //e:vbs //b \\\"{localPathToGpupdateScript}\\\"\"  /it";
+                            Process.Start(startInfo);
+                            Thread.Sleep(500);
+
+                            startInfo.Arguments = $"/run /tn {scheduledTaskName} /s {targetComputer}";
+                            Process.Start(startInfo);
+                            Thread.Sleep(2000);
+                        }
+
+                        startInfo.Arguments = $"/delete /f /tn {scheduledTaskName} /s {targetComputer}";
+                        Process.Start(startInfo);
+
+                        File.Delete(remotePathToGpupdateScript);
+                    }
+
+                    Thread.Sleep(7000);
+                    didTaskSucceed = true;
+                }
             }
             catch
             { }
