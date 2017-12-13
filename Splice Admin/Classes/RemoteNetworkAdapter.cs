@@ -6,6 +6,7 @@ namespace Splice_Admin.Classes
 {
     class RemoteNetworkAdapter
     {
+        public static string ComputerName;
         public string[] IpAddresses { get; set; }
         public string[] SubnetMasks { get; set; }
         public string[] DefaultGateways { get; set; }
@@ -67,7 +68,7 @@ namespace Splice_Admin.Classes
             var networkAdapters = new List<RemoteNetworkAdapter>();
 
             var op = new ConnectionOptions();
-            var sc = new ManagementScope($@"\\{RemoteSystemInfo.TargetComputer}\root\CIMV2", op);
+            var sc = new ManagementScope($@"\\{ComputerName}\root\CIMV2", op);
             var query = new ObjectQuery("SELECT * FROM Win32_NetworkAdapter WHERE Manufacturer != NULL AND Manufacturer != 'Microsoft'");
             var searcher = new ManagementObjectSearcher(sc, query);
 

@@ -41,6 +41,16 @@
     <Grid>
         <ScrollViewer Padding="10">
             <StackPanel>
+                <TextBlock Style="{StaticResource HeaderText}" Text="2017.1213" />
+                <ContentControl Template="{StaticResource BulletTemplate}">
+                    <TextBlock Style="{StaticResource MainText}"
+                               Text="New section: Networking.  This section includes a new remote netstat feature which gives the ability to view all TCP/UDP listening and established connections on the target computer." />
+                </ContentControl>
+                <ContentControl Template="{StaticResource BulletTemplate}">
+                    <TextBlock Style="{StaticResource MainText}"
+                               Text="Details for network adapters was moved from the System Info section to the new Networking section." />
+                </ContentControl>
+                
                 <TextBlock Style="{StaticResource HeaderText}" Text="2017.1107" />
                 <ContentControl Template="{StaticResource BulletTemplate}">
                     <TextBlock Style="{StaticResource MainText}"

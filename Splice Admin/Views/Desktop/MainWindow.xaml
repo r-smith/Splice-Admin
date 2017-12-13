@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Splice_Admin.Views.Desktop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Splice Admin" Height="475" Width="900" MinHeight="425" MinWidth="700"
+        Title="Splice Admin" Height="475" Width="930" MinHeight="425" MinWidth="700"
         xmlns:local="clr-namespace:Splice_Admin.Classes"
         Background="#f3f3f3"
         UseLayoutRounding="True" SnapsToDevicePixels="True">
@@ -22,7 +22,7 @@
                     Background="Transparent">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                     <TextBlock Text="{TemplateBinding Content}" VerticalAlignment="Center" Name="button_Text"
-                               FontSize="16" FontWeight="SemiBold" Foreground="{TemplateBinding Foreground}" />
+                               FontSize="16" FontWeight="Normal" Foreground="{TemplateBinding Foreground}" />
                 </StackPanel>
             </Border>
             <ControlTemplate.Triggers>
@@ -123,6 +123,16 @@
                     Foreground="#a5abb3"
                     Content="Services" />
 
+            <!-- Networking Button -->
+            <Button Click="MenuButton_Click"
+                    Name="btnNetworking"
+                    Template="{StaticResource ResourceKey=ButtonTemplate}"
+                    Width="Auto" Margin="10,10,10,0"
+                    IsTabStop="False"
+                    FocusVisualStyle="{x:Null}"
+                    Foreground="#a5abb3"
+                    Content="Networking" />
+            
             <!-- Storage Button -->
             <Button Click="MenuButton_Click"
                     Name="btnStorage"
@@ -174,7 +184,7 @@
                     Content="Tasks" />
             
             <!-- Separator bar -->
-            <Border Background="#202b36" Height="2" Margin="0,6,0,0" />
+            <Border Background="#202b36" Height="2" Margin="0,10,0,0" />
 
             <!-- Bulk Query Button -->
             <Button Click="MenuButton_Click"

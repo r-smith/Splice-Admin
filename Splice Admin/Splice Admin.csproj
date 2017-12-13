@@ -155,6 +155,9 @@
     <Compile Include="Views\Desktop\LogonSessionsView.xaml.cs">
       <DependentUpon>LogonSessionsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Desktop\NetworkingView.xaml.cs">
+      <DependentUpon>NetworkingView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Desktop\ProcessesView.xaml.cs">
       <DependentUpon>ProcessesView.xaml</DependentUpon>
     </Compile>
@@ -238,6 +241,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Desktop\LogonSessionsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Desktop\NetworkingView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

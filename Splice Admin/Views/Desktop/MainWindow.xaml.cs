@@ -107,6 +107,9 @@ namespace Splice_Admin.Views.Desktop
                 case "Services":
                     btnServices.RaiseEvent(newEventArgs);
                     break;
+                case "Networking":
+                    btnNetworking.RaiseEvent(newEventArgs);
+                    break;
                 case "Storage":
                     btnStorage.RaiseEvent(newEventArgs);
                     break;
@@ -215,6 +218,9 @@ namespace Splice_Admin.Views.Desktop
                 case "Services":
                     contentControl.Content = new ServicesView(txtTargetComputer.Text.Trim());
                     break;
+                case "Networking":
+                    contentControl.Content = new NetworkingView(txtTargetComputer.Text.Trim());
+                    break;
                 case "Storage":
                     contentControl.Content = new StorageView(txtTargetComputer.Text.Trim());
                     break;
@@ -247,6 +253,7 @@ namespace Splice_Admin.Views.Desktop
             btnSystemInfo.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
             btnProcesses.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
             btnServices.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
+            btnNetworking.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
             btnStorage.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
             btnApplications.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));
             btnUpdates.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#a5abb3"));

@@ -123,21 +123,7 @@ namespace Splice_Admin.Views.Desktop
             gridOverlay.Visibility = Visibility.Collapsed;
         }
 
-
-        private void bgThread_GetNetworkAdapters(object sender, DoWorkEventArgs e)
-        {
-            e.Result = RemoteNetworkAdapter.GetNetworkAdapters();
-        }
-
-
-        private void bgThread_GetNetworkAdaptersCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            var networkAdapters = e.Result as List<RemoteNetworkAdapter>;
-            lvNetworkAdapters.ItemsSource = networkAdapters;
-            gridOverlay.Visibility = Visibility.Collapsed;
-        }
-
-
+        
         private void bgThread_GetOdbcDsn(object sender, DoWorkEventArgs e)
         {
             e.Result = RemoteOdbc.GetOdbcDsn();
@@ -223,21 +209,6 @@ namespace Splice_Admin.Views.Desktop
             var bgWorker = new BackgroundWorker();
             bgWorker.DoWork += new DoWorkEventHandler(bgThread_GetOdbcDsn);
             bgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgThread_GetOdbcDsnCompleted);
-
-            // Display overlay window indicating work is being performed.
-            gridOverlay.Visibility = Visibility.Visible;
-
-            // Retrieve event log in a new background thread.
-            bgWorker.RunWorkerAsync();
-        }
-
-
-        private void tabNetworking_Selected(object sender, RoutedEventArgs e)
-        {
-            // Setup a background thread.
-            var bgWorker = new BackgroundWorker();
-            bgWorker.DoWork += new DoWorkEventHandler(bgThread_GetNetworkAdapters);
-            bgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgThread_GetNetworkAdaptersCompleted);
 
             // Display overlay window indicating work is being performed.
             gridOverlay.Visibility = Visibility.Visible;
