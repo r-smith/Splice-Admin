@@ -3,8 +3,8 @@ Splice Admin
 Splice Admin is a remote Windows administration tool.  It allows you to retrieve information and interact with remote machines on your network.
 
 
-###### (Latest version is v2017.1107, released on November 7, 2017)
-### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/download/v2017.1107/SpliceAdm.exe)
+###### (Latest version is v2017.1213, released on December 13, 2017)
+### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/download/v2017.1213/SpliceAdm.exe)
 ### [Click here to download the source](https://github.com/R-Smith/Splice-Admin/archive/master.zip)
 
 ##### Notes
@@ -16,15 +16,20 @@ Splice Admin is a remote Windows administration tool.  It allows you to retrieve
 [![Join the chat at https://gitter.im/Splice-Admin/Lobby](https://badges.gitter.im/Splice-Admin/Lobby.svg)](https://gitter.im/Splice-Admin/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
+### Changes for v2017.1213
+* New section: Networking.  This section includes a new remote netstat feature which gives the ability to view all TCP/UDP listening and established connections on the target computer.
+* Details for network adapters was moved from the System Info section to the new Networking section.
+
+**Check out the new feature under Networking -> Netstat.**  This is just like running the netstat command, but on a remote computer.  View all established connections as well as which ports that are open and which process is listening on a given port.  I've been sitting on this feature for a while and finally decided to push it out.  It'll eventually improve to include process names and paths, resolving IPs to hostnames, filtering, refreshing, and better sorting.
+
+
 ### Changes for v2017.1107
 * Tasks -> Group Policy Update: GPupdate was only updating the computer policy on remote computers.  It now updates the user policy as well.  To achieve this, Splice Admin does several tricks.  1) Create a temporary .VBS file to run gpupdate.exe in a hidden window.  2) Get a list of logged in users.  3) For each user, create a scheduled task that executes the .VBS script (this will execute in the context of each logged in user).  4)  Run the task and then remove the temporary file and task.
 * Bulk Query:  You can now use wildcards when searching for files.   For example: C:\Windows\\*.exe
 
-### Changes for v2017.0821
-* Bug fix: Corrected LDAP queries used in the Bulk Query view.
-* **New features coming soon!**  Including a remote *netstat* feature for displaying all active TCP connections on the remote computer as well as processes and port numbers on which the target computer is listening.
 
 ### Older changes
+* Bug fix: Corrected LDAP queries used in the Bulk Query view.
 * The Processes, Services, and Applications views now include a filter feature.  Type in a search phrase and the results are automatically filtered as you type.
 * Bug fix: In the Bulk Query view, targeting 'All domain computers' no longer causes a crash.
 * Bulk query:  Added the ability to search for registry values.  You can either retrieve a specific value, or you can search for a key and all values within that key will be returned.  For example, searching for hklm\software\microsoft\windows\currentversion\run, would return all startup applications for every computer in your target list.  Target operating system must be Vista/2008 or higher at this time.
