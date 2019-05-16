@@ -143,8 +143,6 @@ namespace Splice_Admin.Views.Desktop
             using (DirectorySearcher directorySearcher = new DirectorySearcher(directoryEntry))
             {
                 directorySearcher.Filter = ("(objectClass=computer)");
-                directorySearcher.SizeLimit = 1000;
-                directorySearcher.PageSize = int.MaxValue;
 
                 try
                 {
