@@ -28,7 +28,7 @@ namespace Splice_Admin.Views.Desktop.Dialog
 
         private void btnSendMessage_Click(object sender, RoutedEventArgs e)
         {
-            string commandLine = $"msg {_WindowsUser.Username} /time:0 Message from {Environment.UserName}{Environment.NewLine}{Environment.NewLine}{txtMessage.Text}";
+            string commandLine = $"msg {_WindowsUser.SessionId} /time:0 Message from {Environment.UserName}{Environment.NewLine}{Environment.NewLine}{txtMessage.Text}";
 
             // Setup WMI query.
             var options = new ConnectionOptions();

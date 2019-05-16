@@ -155,6 +155,10 @@ namespace RemoteDesktopServicesAPI
                             if (string.IsNullOrWhiteSpace(windowsUser.Username))
                                 continue;
 
+                            // Get the user's domain.
+                            if (WTSQuerySessionInformation(server, si.SessionID, WTS_INFO_CLASS.WTSDomainName, out buffer, out bytesReturned) == true)
+                                windowsUser.Domain = Marshal.PtrToStringAnsi(buffer).Trim();
+
                             // Get the connection state of the Terminal Services user.
                             if (si.State == WTS_CONNECTSTATE_CLASS.WTSDisconnected)
                                 windowsUser.IsDisconnected = true;

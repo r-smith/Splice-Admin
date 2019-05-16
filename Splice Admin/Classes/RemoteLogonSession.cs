@@ -12,7 +12,9 @@ namespace Splice_Admin.Classes
         public static TaskResult Result { get; set; }
 
         public string Username { get; set; }
-        public string UsernameAndStatus { get { return this.IsDisconnected == true ? $"{this.Username} (Disconnected)" : this.Username; } }
+        public string Domain { get; set; }
+        public string UsernameAndDomain { get { return Domain.Length > 0 ? $"{Domain}\\{Username}" : Username; } }
+        public string UsernameAndStatus { get { return this.IsDisconnected == true ? $"{this.UsernameAndDomain} (Disconnected)" : this.UsernameAndDomain; } }
         public UInt32 SessionId { get; set; }
         public DateTime LogonTime { get; set; }
         public bool IsDisconnected { get; set; }
@@ -109,7 +111,10 @@ namespace Splice_Admin.Classes
                         string[] argList = new string[] { string.Empty, string.Empty };
                         int returnVal = Convert.ToInt32(m.InvokeMethod("GetOwner", argList));
                         if (returnVal == 0)
+                        {
                             logonSession.Username = argList[0];
+                            logonSession.Domain = argList[1];
+                        }
                         else
                             logonSession.Username = string.Empty;
 

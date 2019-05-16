@@ -15,11 +15,11 @@ namespace Splice_Admin.Views.Desktop.Dialog
     /// </summary>
     public partial class UserDetailsWindow : Window
     {
-        public UserDetailsWindow(string samAccount)
+        public UserDetailsWindow(string samAccount, string domain)
         {
             InitializeComponent();
 
-            SetUserDetails(SearchActiveDirectory(samAccount));
+            SetUserDetails(SearchActiveDirectory(samAccount, domain));
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
@@ -69,13 +69,15 @@ namespace Splice_Admin.Views.Desktop.Dialog
         }
 
 
-        private ActiveDirectoryUser SearchActiveDirectory(string samAccount)
+        private ActiveDirectoryUser SearchActiveDirectory(string samAccount, string domain)
         {
+            if (string.IsNullOrWhiteSpace(domain)) domain = Environment.UserDomainName;
+
             // Store the search results as a collection of Users.  This list will be returned.
             var user = new ActiveDirectoryUser();
             user.SamId = samAccount;
 
-            string ldapPath = "LDAP://" + Environment.UserDomainName;
+            string ldapPath = $"LDAP://{domain}";
             string searchFilter =
                     "(&(objectCategory=person)(objectClass=user)" +
                     $"(sAMAccountName={samAccount}))";

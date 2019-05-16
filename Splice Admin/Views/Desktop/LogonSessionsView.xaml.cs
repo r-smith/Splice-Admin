@@ -296,7 +296,7 @@ namespace Splice_Admin.Views.Desktop
             //to the DataGrid (and has subject and state as property)
             var windowsUser = (RemoteLogonSession)item.SelectedItem;
 
-            var wnd = new Dialog.UserDetailsWindow(windowsUser.Username);
+            var wnd = new Dialog.UserDetailsWindow(windowsUser.Username, windowsUser.Domain);
             wnd.Show();
         }
 
@@ -322,7 +322,7 @@ namespace Splice_Admin.Views.Desktop
                 int startIndex = windowsUser.LogonName.IndexOf(@"\", 0);
                 logonName = windowsUser.LogonName.Substring(startIndex + 1);
 
-                var wnd = new Dialog.UserDetailsWindow(logonName);
+                var wnd = new Dialog.UserDetailsWindow(logonName, windowsUser.LogonDomain);
                 wnd.Show();
             }
         }
