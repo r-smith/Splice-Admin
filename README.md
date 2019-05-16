@@ -3,8 +3,8 @@ Splice Admin
 Splice Admin is a remote Windows administration tool.  It allows you to retrieve information and interact with remote machines on your network.
 
 
-###### (Latest version is v2017.1213, released on December 13, 2017)
-### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/download/v2017.1213/SpliceAdm.exe)
+###### (Latest version is v2019.0515, released on May 15, 2019)
+### [Click here to download the latest .exe](https://github.com/R-Smith/Splice-Admin/releases/latest/download/SpliceAdm.exe)
 ### [Click here to download the source](https://github.com/R-Smith/Splice-Admin/archive/master.zip)
 
 ##### Notes
@@ -14,6 +14,12 @@ Splice Admin is a remote Windows administration tool.  It allows you to retrieve
 * Local administrative rights are required on the target computer.
 
 [![Join the chat at https://gitter.im/Splice-Admin/Lobby](https://badges.gitter.im/Splice-Admin/Lobby.svg)](https://gitter.im/Splice-Admin/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+### Changes for v2019.0515
+It's been a while since my last update.  Nothing to get excited about with this release - there's only a few minor changes.  This application is definitely due for a new look and some new features.  Hopefully soon!
+
+* The __users__ section now includes each user's domain when listing logged on users.  Previously, only their username was listed.
+* The auto-fill that suggests target computer names as you type was limited to retrieving 1000 computer objects from AD.  That limit has been removed.  (As before, this search happens one time in a background thread when the application opens.  It's used to populate the auto-fill list.)
 
 
 ### Changes for v2017.1213
